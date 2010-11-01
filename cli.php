@@ -55,10 +55,7 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 	}
 	$num_sections = count($sections);
 	
-	print_r($sections);
-	die();
-
-
+	
 // Load details about each section
 	
 	$total_items = 0;
