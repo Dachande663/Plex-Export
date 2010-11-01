@@ -231,7 +231,7 @@ function load_data_for_movie($el) {
 		);
 		$total_size = 0;
 		foreach($el->Media->Part as $part) {
-			$total_size += intval($part->attributes()->size);
+			$total_size += floatval($part->attributes()->size);
 		}
 		if($total_size>0) {
 			$item['media']['total_size'] = $total_size;
