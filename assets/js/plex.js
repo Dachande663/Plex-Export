@@ -416,6 +416,11 @@ var PLEX = {
 			PLEX.hide_item();
 		});
 		
+		$("#toggle_sidebar").click(function(){
+			$("#sidebar").toggle();
+			return false;
+		});
+		
 		var hash = window.location.hash;
 		if(hash!="") {
 			var regex = new RegExp("#([0-9]+)/?([0-9]+)?/?");

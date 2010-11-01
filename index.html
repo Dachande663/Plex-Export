@@ -3,7 +3,12 @@
 <head>
 	<meta charset=utf-8 />
 	<title>Plex Export</title>
+	<meta name="viewport" content="initial-scale=1,minimum-scale=1,maximum-scale=1" />
+	
 	<link rel="stylesheet" href="assets/css/style.css" type="text/css" />
+	<link rel="stylesheet" media="all and (max-device-width: 480px)" href="assets/css/iphone.css">
+	<link rel="stylesheet" media="all and (-webkit-min-device-pixel-ratio: 2" href="assets/css/iphone-retina.css" />
+	
 	<script src="assets/js/jquery.1.4.3.min.js"></script>
 	<script src="assets/js/utils.js"></script>
 	<script src="assets/js/plex.js"></script>
@@ -19,10 +24,10 @@
 
 	<div id="header">
 		<h1><span>Plex Export</span></h1>
-		<p><span>Library Items</span> <strong id="total_items">000</strong></p>
+		<p><span>Library Items</span> <strong id="total_items"></strong></p>
 	</div><!-- end #header -->
 
-
+	<a href="#sidebar" id="toggle_sidebar">toggle sidebar</a>
 
 	<div id="sidebar">
 		
@@ -47,11 +52,7 @@
 		
 	</div><!-- end #sidebar -->
 	
-	
 	<div id="main">
-		
-		
-		
 		
 		<div id="section-header">
 			<div>
@@ -69,11 +70,7 @@
 			<ul></ul>
 		</div>
 		
-		
-		
-		
 	</div><!-- end #main -->
-
 
 	<div id="footer">
 		<p><a href="http://l0ke.com/bl">Plex</a> + <a href="http://l0ke.com/bb">Plex Export</a></p>
@@ -81,14 +78,8 @@
 
 </div><!-- end #container -->
 
-
-
-
-
-
 <div id="popup-overlay"></div>
 <div id="popup-container"></div>
-
 
 </body>
 </html>
