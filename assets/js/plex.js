@@ -4,6 +4,8 @@ var PLEX = {
 	total_items: 0,
 	current_section: false,
 	current_item: false,
+	previous_item_id: 0,
+	next_item_id: 0,
 	current_sort_key: "title",
 	current_sort_order: "asc",
 	current_genre: "all",
@@ -217,6 +219,11 @@ var PLEX = {
 		var previous_item_id = parseInt(_current_item.prev().attr("data-item"));
 		var next_item_id = parseInt(_current_item.next().attr("data-item"));
 		
+		
+		PLEX.previous_item_id = (previous_item_id>0)?previous_item_id:0;
+		PLEX.next_item_id = (next_item_id>0)?next_item_id:0;
+		
+		
 		var popup_footer = '<div id="popup-footer">';
 		if(next_item_id>0) popup_footer += '<span class="right" data-item="'+PLEX.current_section.items[next_item_id].key+'">'+PLEX.current_section.items[next_item_id].title+' &raquo;</span>';
 		if(previous_item_id>0) popup_footer += '<span data-item="'+PLEX.current_section.items[previous_item_id].key+'">&laquo; '+PLEX.current_section.items[previous_item_id].title+'</span></div>';
@@ -380,6 +387,29 @@ var PLEX = {
 		
 		PLEX._popup_overlay.click(function(){
 			PLEX.hide_item();
+		});
+		
+		$(document).keyup(function(event) {
+			if(event.shiftKey || event.metaKey || event.altKey || event.ctrlKey) return;
+			switch(event.which) {
+				case 27: // esc
+				case 88: // x
+					PLEX.hide_item();
+					break;
+				case 74: // j
+					if(PLEX.previous_item_id>0) {
+						PLEX.display_item(PLEX.previous_item_id);
+					}
+					break;
+				case 75: // k
+					if(PLEX.next_item_id>0) {
+						PLEX.display_item(PLEX.next_item_id);
+					} else if(!PLEX.popup_visible) { // Show first item if none others
+						var first_item = parseInt($(":first", PLEX._item_list).attr("data-item"));
+						if(first_item>0) PLEX.display_item(first_item);
+					}
+					break;
+			}
 		});
 		
 		$(".popup-close").live("click", function(){

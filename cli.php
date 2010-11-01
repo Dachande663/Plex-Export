@@ -5,7 +5,7 @@
 	
 	A CLI script to export information from your Plex library.
 	Usage:
-		php cli.php [-plex-url="http://your-plex-library:32400"] [-data-dir="plex-data"]
+		php cli.php [-plex-url="http://your-plex-library:32400"] [-data-dir="plex-data"] [-sections=1,2,3]
 	
 */
 $timer_start = microtime(true);
@@ -22,10 +22,21 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 	$defaults = array(
 		'plex-url' => 'http://localhost:32400',
 		'data-dir' => 'plex-data',
-		'thumbnail-width' => 150
+		'thumbnail-width' => 150,
+		'sections' => 'all'
 	);
 	$options = hl_parse_arguments($_SERVER['argv'], $defaults);
 	if(substr($options['plex-url'],-1)!='/') $options['plex-url'] .= '/'; // Always have a trailing slash
+	if($options['sections'] == 'all') {
+		$options['sections'] = false;
+	} else {
+		$sections = array_filter(array_map('intval', explode(',',$options['sections'])));
+		if(count($sections)>0) {
+			$options['sections'] = $sections;
+		} else {
+			$options['sections'] = false;
+		}
+	}
 	
 	
 // Run in script directory, regardless of current working directory
@@ -43,6 +54,9 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 		exit();
 	}
 	$num_sections = count($sections);
+	
+	print_r($sections);
+	die();
 
 
 // Load details about each section
@@ -337,7 +351,6 @@ function load_all_sections() {
 	$xml = load_xml_from_url($url);
 	if(!$xml) return false;
 	
-	
 	$total_sections = intval($xml->attributes()->size);
 	if($total_sections<=0) {
 		plex_error('No sections were found in this Plex library');
@@ -352,6 +365,10 @@ function load_all_sections() {
 		$key = intval($_el->key);
 		$type = strval($_el->type);
 		$title = strval($_el->title);
+		if($options['sections'] and !in_array($key, $options['sections'])) {
+			plex_log('Skipping section: '.$title);
+			continue;
+		}
 		if($type=='movie' or $type=='show') {
 			$sections[$key] = array('key'=>$key, 'type'=>$type, 'title'=>$title);
 			$num_sections++;
