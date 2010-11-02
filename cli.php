@@ -2,11 +2,11 @@
 /*
 	Plex Export
 	Luke Lanchester <luke@lukelanchester.com>
-	
+
 	A CLI script to export information from your Plex library.
 	Usage:
-		php cli.php [-plex-url="http://your-plex-library:32400"] [-data-dir="plex-data"] [-sections=1,2,3]
-	
+		php cli.php [-plex-url="http://your-plex-library:32400"] [-data-dir="plex-data"] [-sections=1,2,3 or "Movies,TV Shows"]
+
 */
 $timer_start = microtime(true);
 $plex_export_version = 1;
@@ -14,11 +14,9 @@ ini_set('memory_limit', '128M');
 set_error_handler('plex_error_handler');
 error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 
-
 plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 
-
-// Load options
+// Set-up
 	$defaults = array(
 		'plex-url' => 'http://localhost:32400',
 		'data-dir' => 'plex-data',
@@ -27,45 +25,63 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 	);
 	$options = hl_parse_arguments($_SERVER['argv'], $defaults);
 	if(substr($options['plex-url'],-1)!='/') $options['plex-url'] .= '/'; // Always have a trailing slash
-	if($options['sections'] == 'all') {
-		$options['sections'] = false;
-	} else {
-		$sections = array_filter(array_map('intval', explode(',',$options['sections'])));
-		if(count($sections)>0) {
-			$options['sections'] = $sections;
-		} else {
-			$options['sections'] = false;
-		}
-	}
-	
-	
-// Run in script directory, regardless of current working directory
-	$options['absolute-data-dir'] = dirname(__FILE__).'/'.$options['data-dir'];
-	
-	
-// Check everything is enabled as necessary
-	check_dependancies();
+	$options['absolute-data-dir'] = dirname(__FILE__).'/'.$options['data-dir']; // Run in current dir (PHP CLI defect)
+	check_dependancies(); // Check everything is enabled as necessary
 
 
 // Load details about all sections
-	$sections = load_all_sections();
-	if(!$sections) {
+	$all_sections = load_all_sections();
+	if(!$all_sections) {
 		plex_error('Could not load section data, aborting');
 		exit();
 	}
+
+	if($options['sections'] == 'all') {
+		$sections = $all_sections;
+	} else {
+		
+		$sections_to_show = array_filter(explode(',',$options['sections']));
+		$section_titles = array();
+		foreach($all_sections as $i=>$section) $section_titles[strtolower($section['title'])] = $i;
+		
+		foreach($sections_to_show as $section_key_or_title) {
+			
+			$section_title = strtolower(trim($section_key_or_title));
+			if(array_key_exists($section_title, $section_titles)) {
+				$section_id = $section_titles[$section_title];
+				$sections[$section_id] = $all_sections[$section_id];
+				continue;
+			}
+			
+			$section_id = intval($section_key_or_title);
+			if(array_key_exists($section_id, $all_sections)) {
+				$sections[$section_id] = $all_sections[$section_id];
+				continue;
+			}
+			
+			plex_error('Could not find section: '.$section_key_or_title);
+			
+		} // end foreach: $sections_to_show
+		
+	} // end if: !all sections
+	
 	$num_sections = count($sections);
-	
-	
+	if($num_sections==0) {
+		plex_error('No sections were found to scan');
+		exit();
+	}
+
+
 // Load details about each section
-	
+
 	$total_items = 0;
-	
+
 	foreach($sections as $i=>$section) {
-		
+
 		plex_log('Scanning section: '.$section['title']);
-		
+
 		$items = load_items_for_section($section);
-		
+
 		if(!$items) {
 			plex_error('No items were added for '.$section['title'].', skipping');
 			$sections[$i]['num_items'] = 0;
@@ -74,12 +90,12 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 		}
 		$num_items = count($items);
 		$total_items += $num_items;
-		
+
 		plex_log('Analysing media items in section...');
-		
+
 		$sorts_title = $sorts_release = $sorts_rating = array();
 		$raw_section_genres = array();
-		
+
 		foreach($items as $key=>$item) {
 			$sorts_title[$key] = (substr(strtolower($item['title']),0,4)=='the ')?substr($item['title'],4):$item['title'];
 			$sorts_release[$key] = @strtotime($item['release_date']);
@@ -90,7 +106,7 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 				}
 			}
 		}
-		
+
 		asort($sorts_title, SORT_STRING);
 		asort($sorts_release, SORT_NUMERIC);
 		asort($sorts_rating, SORT_NUMERIC);
@@ -100,7 +116,7 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 		$sorts['title_desc'] = array_reverse($sorts['title_asc']);
 		$sorts['release_desc'] = array_reverse($sorts['release_asc']);
 		$sorts['rating_desc'] = array_reverse($sorts['rating_asc']);
-		
+
 		$section_genres = array();
 		if(count($raw_section_genres)>0) {
 			arsort($raw_section_genres);
@@ -111,21 +127,21 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 				);
 			}
 		}
-		
+
 		$sections[$i]['num_items'] = $num_items;
 		$sections[$i]['items'] = $items;
 		$sections[$i]['sorts'] = $sorts;
 		$sections[$i]['genres'] = $section_genres;
-		
+
 		plex_log('Added '.$num_items.' '.hl_inflect($num_items,'item').' from the '.$section['title'].' section');
-		
-	} // end foreach: $sections
+
+	} // end foreach: $sections_to_export
 
 
 // Output all data
-	
+
 	plex_log('Exporting data for '.$num_sections.' '.hl_inflect($num_sections,'section').' containing '.$total_items.' '.hl_inflect($total_items,'item'));
-	
+
 	$output = array(
 		'status' => 'success',
 		'version' => $plex_export_version,
@@ -137,36 +153,36 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 	$output = json_encode($output);
 	$filename = $options['absolute-data-dir'].'/data.js';
 	$bytes_written = file_put_contents($filename, $output);
-	
+
 	if(!$bytes_written) {
 		plex_error('Could not save JSON data to '.$filename.', please make sure directory is writeable');
 		exit();
 	}
-	
+
 	plex_log('Wrote '.$bytes_written.' bytes to '.$filename);
-	
+
 	$timer_end = microtime(true);
 	$time_taken = $timer_end - $timer_start;
 	plex_log('Plex Export completed in '.round($time_taken,2).' seconds');
-	
+
 
 
 // Methods
 
 function load_items_for_section($section) {
-	
+
 	global $options;
 	$url = $options['plex-url'].'library/sections/'.$section['key'].'/all';
-	
+
 	$xml = load_xml_from_url($url);
 	if(!$xml) return false;
-	
+
 	$num_items = intval($xml->attributes()->size);
 	if($num_items<=0) {
 		plex_error('No items were found in this section, skipping');
 		return false;
 	}
-	
+
 	switch($section['type']) {
 		case 'movie':
 			$object_to_loop = $xml->Video;
@@ -180,33 +196,33 @@ function load_items_for_section($section) {
 			plex_error('Unknown section type provided to parse: '.$section['type']);
 			return false;
 	}
-	
+
 	plex_log('Found '.$num_items.' '.hl_inflect($num_items,$section['type']).' in '.$section['title']);
-	
+
 	$items = array();
 	foreach($object_to_loop as $el) {
 		$item = $object_parser($el);
 		if($item) $items[$item['key']] = $item;
 	}
-	
+
 	return $items;
-	
+
 } // end func: load_items_for_section
 
 
 
 function load_data_for_movie($el) {
-	
+
 	global $options;
-	
+
 	$_el = $el->attributes();
 	$key = intval($_el->ratingKey);
 	if($key<=0) return false;
 	$title = strval($_el->title);
 	plex_log('Scanning movie: '.$title);
-	
+
 	$thumb = generate_item_thumbnail(strval($_el->thumb), $key, $title);
-	
+
 	$item = array(
 		'key' => $key,
 		'type' => 'movie',
@@ -227,7 +243,7 @@ function load_data_for_movie($el) {
 		'role' => false,
 		'media' => false,
 	);
-	
+
 	$media_el = $el->Media->attributes();
 	if(intval($media_el->duration)>0) {
 		$item['media'] = array(
@@ -248,28 +264,28 @@ function load_data_for_movie($el) {
 			$item['media']['total_size'] = $total_size;
 		}
 	}
-		
+
 	$url = $options['plex-url'].'library/metadata/'.$key;
 	$xml = load_xml_from_url($url);
 	if(!$xml) {
 		plex_error('Could not load additional metadata for '.$title);
 		return $item;
 	}
-	
+
 	$genres = array();
 	foreach($xml->Video->Genre as $genre) $genres[] = strval($genre->attributes()->tag);
 	if(count($genres)>0) $item['genre'] = $genres;
-	
+
 	$directors = array();
 	foreach($xml->Video->Director as $director) $directors[] = strval($director->attributes()->tag);
 	if(count($directors)>0) $item['director'] = $directors;
-	
+
 	$roles = array();
 	foreach($xml->Video->Role as $role) $roles[] = strval($role->attributes()->tag);
 	if(count($roles)>0) $item['role'] = $roles;
-	
+
 	return $item;
-	
+
 } // end func: load_data_for_movie
 
 
@@ -277,17 +293,17 @@ function load_data_for_movie($el) {
 
 
 function load_data_for_show($el) {
-	
+
 	global $options;
-	
+
 	$_el = $el->attributes();
 	$key = intval($_el->ratingKey);
 	if($key<=0) return false;
 	$title = strval($_el->title);
 	plex_log('Scanning show: '.$title);
-	
+
 	$thumb = generate_item_thumbnail(strval($_el->thumb), $key, $title);
-	
+
 	$item = array(
 		'key' => $key,
 		'type' => 'movie',
@@ -306,18 +322,18 @@ function load_data_for_show($el) {
 		'num_seasons' => false,
 		'seasons' => array()
 	);
-	
+
 	$genres = array();
 	foreach($el->Genre as $genre) $genres[] = strval($genre->attributes()->tag);
 	if(count($genres)>0) $item['genre'] = $genres;
-	
+
 	$url = $options['plex-url'].'library/metadata/'.$key.'/children';
 	$xml = load_xml_from_url($url);
 	if(!$xml) {
 		plex_error('Could not load additional metadata for '.$title);
 		return $item;
 	}
-	
+
 	$seasons = array();
 	foreach($xml->Directory as $el2) {
 		if($el2->attributes()->type!='season') continue;
@@ -332,40 +348,36 @@ function load_data_for_show($el) {
 	}
 	$item['num_seasons'] = count($seasons);
 	if($item['num_seasons']>0) $item['seasons'] = $seasons;
-	
+
 	return $item;
-	
+
 } // end func: load_data_for_show
 
 
 
 function load_all_sections() {
-	
+
 	global $options;
 	$url = $options['plex-url'].'library/sections';
 	plex_log('Searching for sections in the Plex library at '.$options['plex-url']);
-	
+
 	$xml = load_xml_from_url($url);
 	if(!$xml) return false;
-	
+
 	$total_sections = intval($xml->attributes()->size);
 	if($total_sections<=0) {
 		plex_error('No sections were found in this Plex library');
 		return false;
 	}
-	
+
 	$sections = array();
 	$num_sections = 0;
-	
+
 	foreach($xml->Directory as $el) {
 		$_el = $el->attributes();
 		$key = intval($_el->key);
 		$type = strval($_el->type);
 		$title = strval($_el->title);
-		if($options['sections'] and !in_array($key, $options['sections'])) {
-			plex_log('Skipping section: '.$title);
-			continue;
-		}
 		if($type=='movie' or $type=='show') {
 			$sections[$key] = array('key'=>$key, 'type'=>$type, 'title'=>$title);
 			$num_sections++;
@@ -373,75 +385,75 @@ function load_all_sections() {
 			plex_error('Skipping section of unknown type: '.$type);
 		}
 	}
-	
+
 	if($num_sections==0) {
 		plex_error('No valid sections found, aborting');
 		return false;
 	}
-	
+
 	if($total_sections!=$num_sections) {
 		plex_log('Found '.$num_sections.' valid '.hl_inflect($num_sections, 'section').' out of a possible '.$total_sections.' '.hl_inflect($total_sections, 'section').' in this Plex library');
 	} else {
 		plex_log('Found '.$num_sections.' '.hl_inflect($num_sections, 'section').' in this Plex library');
 	}
-	
+
 	return $sections;
-	
+
 } // end func: load_all_sections
 
 
 
 function load_xml_from_url($url) {
-	
+
 	global $options;
-	
+
 	if(!@fopen($url, 'r')) {
 		plex_error('The Plex library could not be found at '.$options['plex-url']);
 		return false;
 	}
-	
+
 	$xml = @simplexml_load_file($url);
 	if(!$xml) {
 		plex_error('Data could not be read from the Plex server at '.$url);
 		return false;
 	}
-	
+
 	if(!$xml) {
 		plex_error('Invalid XML returned by the Plex server, aborting');
 		return false;
 	}
-	
+
 	return $xml;
-	
+
 } // end func: load_xml_from_url
 
 
 
 function generate_item_thumbnail($thumb_url, $key, $title) {
-	
+
 	global $options;
-	
+
 	$filename = '/thumb_'.$key.'.png';
 	$save_filename = $options['absolute-data-dir'].$filename;
 	$return_filename = $options['data-dir'].$filename;
-	
+
 	if(file_exists($save_filename)) return $return_filename;
-	
+
 	if($thumb_url=='') {
 		plex_error('No thumbnail URL was provided for '.$title, ', skipping');
 		return false;
 	}
-	
+
 	$source = $options['plex-url'].substr($thumb_url,1);
 	$img_data = @file_get_contents($source);
 	if(!$img_data) {
 		plex_error('Could not load thumbnail for '.$title,' skipping');
 		return false;
 	}
-	
+
 	$im = imagecreatefromstring($img_data);
 	$width = imagesx($im);
-	
+
 	if($width > $options['thumbnail-width']) {
 		$height = imagesy($im);
 		$scale = $width / $options['thumbnail-width'];
@@ -452,12 +464,12 @@ function generate_item_thumbnail($thumb_url, $key, $title) {
 		imagecopyresampled($im, $old_image, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
 		imagedestroy($old_image);
 	}
-	
+
 	imagepng($im, $save_filename);
     imagedestroy($im);
 	unset($img_data);
 	return $return_filename;
-	
+
 } // end func: generate_item_thumbnail
 
 
@@ -483,32 +495,32 @@ function plex_error_handler($errno, $errstr, $errfile=null, $errline=null) {
 function check_dependancies() {
 	global $options;
 	$errors = false;
-	
+
 	if(!extension_loaded('simplexml')) {
 		plex_error('SimpleXML is not enabled');
 		$errors = true;
 	}
-	
+
 	if(!extension_loaded('gd')) {
 		plex_error('GD is not enabled');
 		$errors = true;
 	}
-	
+
 	if(!ini_get('allow_url_fopen')) {
 		plex_error('Remote URL access is disabled (allow_url_fopen)');
 		$errors = true;
 	}
-	
+
 	if(!is_writable($options['absolute-data-dir'])) {
 		plex_error('Data directory is not writeable at '.$options['absolute-data-dir']);
 		$errors = true;
 	}
-	
+
 	if($errors) {
 		plex_error('Failed one or more dependancy checks; aborting');
 		exit();
 	}
-	
+
 } // end func: check_dependancies
 
 
