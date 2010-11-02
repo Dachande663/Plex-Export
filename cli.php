@@ -47,7 +47,7 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
       foreach($all_sections as $j=>$section) {
         $key = array_search($section_key_or_title, $section);
         if($key == 'title' || $key == 'key')
-          array_push($sections_to_export, $section);
+          $sections_to_export[$section['key']] = $section;
       }
     }
 
