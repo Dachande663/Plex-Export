@@ -5,7 +5,7 @@
 
 	A CLI script to export information from your Plex library.
 	Usage:
-		php cli.php [-plex-url="http://your-plex-library:32400"] [-data-dir="plex-data"] [-sections=1,2,3]
+		php cli.php [-plex-url="http://your-plex-library:32400"] [-data-dir="plex-data"] [-sections=1,2,3 or "Movies,TV Shows"]
 
 */
 $timer_start = microtime(true);
@@ -14,11 +14,9 @@ ini_set('memory_limit', '128M');
 set_error_handler('plex_error_handler');
 error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 
-
 plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 
-
-// Load options
+// Set-up
 	$defaults = array(
 		'plex-url' => 'http://localhost:32400',
 		'data-dir' => 'plex-data',
@@ -27,6 +25,9 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 	);
 	$options = hl_parse_arguments($_SERVER['argv'], $defaults);
 	if(substr($options['plex-url'],-1)!='/') $options['plex-url'] .= '/'; // Always have a trailing slash
+	$options['absolute-data-dir'] = dirname(__FILE__).'/'.$options['data-dir']; // Run in current dir (PHP CLI defect)
+	check_dependancies(); // Check everything is enabled as necessary
+
 
 // Load details about all sections
 	$all_sections = load_all_sections();
@@ -36,40 +37,46 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 	}
 
 	if($options['sections'] == 'all') {
-		$sections_to_export = $all_sections;
+		$sections = $all_sections;
 	} else {
-    $all_titles = array_map(function($value){ return $value['title']; }, $all_sections);
-    $all_keys = array_map(function($value){ return $value['key']; }, $all_sections);
-
-    $sections = array_filter(explode(',',$options['sections']));
-		$sections_to_export = array();
-    foreach($sections as $i=>$section_key_or_title) {
-      foreach($all_sections as $j=>$section) {
-        $key = array_search($section_key_or_title, $section);
-        if($key == 'title' || $key == 'key')
-          $sections_to_export[$section['key']] = $section;
-      }
-    }
-
-		if(count($sections_to_export)==0) {
-			$sections_to_export = $all_sections;
-		}
+		
+		$sections_to_show = array_filter(explode(',',$options['sections']));
+		$section_titles = array();
+		foreach($all_sections as $i=>$section) $section_titles[strtolower($section['title'])] = $i;
+		
+		foreach($sections_to_show as $section_key_or_title) {
+			
+			$section_title = strtolower(trim($section_key_or_title));
+			if(array_key_exists($section_title, $section_titles)) {
+				$section_id = $section_titles[$section_title];
+				$sections[$section_id] = $all_sections[$section_id];
+				continue;
+			}
+			
+			$section_id = intval($section_key_or_title);
+			if(array_key_exists($section_id, $all_sections)) {
+				$sections[$section_id] = $all_sections[$section_id];
+				continue;
+			}
+			
+			plex_error('Could not find section: '.$section_key_or_title);
+			
+		} // end foreach: $sections_to_show
+		
+	} // end if: !all sections
+	
+	$num_sections = count($sections);
+	if($num_sections==0) {
+		plex_error('No sections were found to scan');
+		exit();
 	}
-	$num_sections = count($sections_to_export);
-
-// Run in script directory, regardless of current working directory
-	$options['absolute-data-dir'] = dirname(__FILE__).'/'.$options['data-dir'];
-
-
-// Check everything is enabled as necessary
-	check_dependancies();
 
 
 // Load details about each section
 
 	$total_items = 0;
 
-	foreach($sections_to_export as $i=>$section) {
+	foreach($sections as $i=>$section) {
 
 		plex_log('Scanning section: '.$section['title']);
 
@@ -77,8 +84,8 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 
 		if(!$items) {
 			plex_error('No items were added for '.$section['title'].', skipping');
-			$sections_to_export[$i]['num_items'] = 0;
-			$sections_to_export[$i]['items'] = array();
+			$sections[$i]['num_items'] = 0;
+			$sections[$i]['items'] = array();
 			continue;
 		}
 		$num_items = count($items);
@@ -121,10 +128,10 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 			}
 		}
 
-		$sections_to_export[$i]['num_items'] = $num_items;
-		$sections_to_export[$i]['items'] = $items;
-		$sections_to_export[$i]['sorts'] = $sorts;
-		$sections_to_export[$i]['genres'] = $section_genres;
+		$sections[$i]['num_items'] = $num_items;
+		$sections[$i]['items'] = $items;
+		$sections[$i]['sorts'] = $sorts;
+		$sections[$i]['genres'] = $section_genres;
 
 		plex_log('Added '.$num_items.' '.hl_inflect($num_items,'item').' from the '.$section['title'].' section');
 
@@ -141,7 +148,7 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 		'last_generated' => time()*1000,
 		'total_items' => $total_items,
 		'num_sections' => $num_sections,
-		'sections' => $sections_to_export
+		'sections' => $sections
 	);
 	$output = json_encode($output);
 	$filename = $options['absolute-data-dir'].'/data.js';
