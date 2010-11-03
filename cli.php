@@ -75,7 +75,7 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 // Load details about each section
 
 	$total_items = 0;
-
+	$section_display_order = array();
 	foreach($sections as $i=>$section) {
 
 		plex_log('Scanning section: '.$section['title']);
@@ -127,7 +127,8 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 				);
 			}
 		}
-
+		
+		$section_display_order[] = $i;
 		$sections[$i]['num_items'] = $num_items;
 		$sections[$i]['items'] = $items;
 		$sections[$i]['sorts'] = $sorts;
@@ -148,6 +149,7 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 		'last_generated' => time()*1000,
 		'total_items' => $total_items,
 		'num_sections' => $num_sections,
+		'section_display_order' => $section_display_order,
 		'sections' => $sections
 	);
 	$output = json_encode($output);
@@ -326,14 +328,14 @@ function load_data_for_show($el) {
 	$genres = array();
 	foreach($el->Genre as $genre) $genres[] = strval($genre->attributes()->tag);
 	if(count($genres)>0) $item['genre'] = $genres;
-
+	
 	$url = $options['plex-url'].'library/metadata/'.$key.'/children';
 	$xml = load_xml_from_url($url);
 	if(!$xml) {
 		plex_error('Could not load additional metadata for '.$title);
 		return $item;
 	}
-
+	
 	$seasons = array();
 	foreach($xml->Directory as $el2) {
 		if($el2->attributes()->type!='season') continue;

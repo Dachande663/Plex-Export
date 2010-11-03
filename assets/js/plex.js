@@ -23,12 +23,14 @@ var PLEX = {
 			PLEX.sections[section_key] = section_data;
 		});
 		PLEX.total_items = aData.total_items;
+		PLEX.section_display_order = aData.section_display_order;
 		PLEX.data_loaded = true;
 	}, // end func: load_data
 
 
 	display_sections_list: function() {
-		$.each(PLEX.sections, function(i,section){
+		$.each(PLEX.section_display_order, function(i,key){
+			var section = PLEX.sections[key];
 			PLEX._sections_list.append('<li data-section="'+section.key+'" class="'+section.type+'"><em>'+number_format(section.num_items)+'</em><span>'+section.title+'</span></li>');
 		});
 	}, // end func: display_sections_list
