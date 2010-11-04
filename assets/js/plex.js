@@ -294,8 +294,8 @@ var PLEX = {
 			}
 			popup_content += '</ul>';
 		}
-		
-		
+
+
 		if(PLEX.current_item.num_seasons && PLEX.current_item.num_seasons>0) {
 			console.log(PLEX.current_item.seasons);
 			//popup_content += '<div id="popup_seasons"><h4>Season Browser</h4></div>';
@@ -304,20 +304,25 @@ var PLEX = {
 				popup_content += '<li data-season="'+season.key+'">'+season.title+'</li>';
 			});
 			popup_content += '</ul></td><td id="popup_seasons_episodes"></td><td id="popup_seasons_episode"></td></tr></table></div>';
-			
+
 			$("#popup_seasons_seasons li").live("click", function(){
 				$("#popup_seasons_seasons li").removeClass("current");
 				$(this).addClass("current");
 				var season_key = $(this).attr("data-season");
 				var season = PLEX.current_item.seasons[season_key];
 				var html = '<ul>';
-				$.each(season.episodes, function(key, episode){
+        var episodes = [];
+        $.each(season.episodes, function(key, episode) {
+          episodes.push(episode);
+        });
+        episodes = episodes.sort(function(e1, e2){ return ((e1.index < e2.index) ? -1 : (e1.index > e2.index) ? 1 : 0); });
+				$.each(episodes, function(key, episode){
 					html += '<li data-season="'+season.key+'" data-episode="'+episode.key+'">'+episode.index+'. '+episode.title+'</li>';
 				});
 				html += '</ul>';
 				$("#popup_seasons_episodes").html(html);
 			});
-			
+
 			$("#popup_seasons_episodes li").live("click", function(){
 				$("#popup_seasons_episodes li").removeClass("current");
 				$(this).addClass("current");
@@ -325,18 +330,18 @@ var PLEX = {
 				var episode_key = $(this).attr("data-episode");
 				var season = PLEX.current_item.seasons[season_key];
 				var episode = season.episodes[episode_key];
-				
+
 				var minutes = Math.round(episode.duration/60000);
-				
+
 				var html = '<h5>'+episode.title+'</h5><p class="meta">'+episode_tag(season,episode)+' | '+minutes+' '+inflect(minutes,'minute')+' | Rated '+episode.rating+'</p><p>'+episode.summary+'</p>';
-				
+
 				$("#popup_seasons_episode").html(html);
 			});
-			
-			
+
+
 		}
-		
-		
+
+
 		popup_content += '</div>';
 
 		return popup_header + '<div id="popup-outer"><div id="popup-inner">' + popup_sidebar + popup_content + '<div class="clear"></div></div>' + popup_footer + '</div>';
