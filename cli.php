@@ -344,8 +344,33 @@ function load_data_for_show($el) {
 			'key' => $season_key,
 			'title' => strval($el2->attributes()->title),
 			'num_episodes' => intval($el2->attributes()->leafCount),
+			'actual_episodes' => 0,
+			'episodes' => array(),
 			'index' => intval($el2->attributes()->index)
 		);
+		
+		$url = $options['plex-url'].'library/metadata/'.$season_key.'/children';
+		$xml2 = load_xml_from_url($url);
+		if(!$xml2) {
+			plex_error('Could not load season data for '.$item['title'].' : '.$season['title']);
+		}
+		
+		foreach($xml2->Video as $el3) {
+			if($el3->attributes()->type!='episode') continue;
+			$episode_key = intval($el3->attributes()->ratingKey);
+			$episode = array(
+				'key' => $episode_key,
+				'title' => strval($el3->attributes()->title),
+				'index' => intval($el3->attributes()->index),
+				'summary' => strval($el3->attributes()->summary),
+				'rating' => floatval($el3->attributes()->rating),
+				'duration' => floatval($el3->attributes()->duration),
+				'view_count' => intval($el3->attributes()->viewCount)
+			);
+			$season['episodes'][$episode_key] = $episode;
+			$season['actual_episodes']++;
+		}
+		
 		$seasons[$season_key] = $season;
 	}
 	$item['num_seasons'] = count($seasons);

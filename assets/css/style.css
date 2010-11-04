@@ -370,6 +370,54 @@ body {
 }
 
 
+
+#popup_seasons {
+	width: 535px;
+	border-top: 2px solid #E7EBED;
+	margin-top: 12px;
+	padding-top: 6px;
+	font-size: 11px;
+}
+#popup_seasons table {
+	margin-top: 6px;
+	width: 100%;
+	border-collapse: collapse;
+}
+#popup_seasons td {
+	vertical-align: top;
+	border: 1px solid #E7EBED;
+}
+#popup_seasons_seasons { width: 80px; }
+#popup_seasons li { padding: 4px; }
+#popup_seasons li.current, #popup_seasons li:hover {
+	background: #FF9421;
+	color: #FFF;
+	cursor: pointer;
+}
+#popup_seasons_episodes { width: 180px; }
+#popup_seasons_episode {
+	padding: 8px;
+}
+#popup_seasons_episode h5 {
+	font-size: 14px;
+}
+#popup_seasons_episode .meta {
+	padding-top: 0;
+	color: #666;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* FOOTER //////////////////////////////////////////////////////////////////////////*/
 
 #footer {

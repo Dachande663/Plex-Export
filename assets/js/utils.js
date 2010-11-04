@@ -1,3 +1,11 @@
+function episode_tag(season, episode) {
+	var s = season.index;
+	var e = episode.index;
+	r = (s<10)?'S0'+s:'S'+s;
+	r += (e<10)?'E0'+e:'E'+e;
+	return r;
+} // end func: episode_tag
+
 
 function number_format(num) {
 	var num = parseInt(num);
@@ -17,7 +25,6 @@ function inflect(num, single, plural) {
 } // end func: inflect
 
 function hl_bytes_to_human(bytes) {
-	
 	var b = parseInt(bytes);
 	if(b < 1024) return b+' b';
 	var kb = b/1024;
@@ -28,13 +35,8 @@ function hl_bytes_to_human(bytes) {
 	if(gb < 1024) return Math.round(gb*100)/100+' Gb';
 	var pb = gb/1024;
 	return Math.round(pb*100)/100+' Pb';
-	
-	
-	
 	if(bytes < 1073741824) return Math.round(bytes/1048576*100)/100+' Mb';
-	
 	var kb = b/1024;
-	
 	if(bytes < 1099511627776) return Math.round(bytes/1073741824*100)/100+' Gb';
 	return bytes+' Xb';
 } // end func: hl_bytes_to_human
