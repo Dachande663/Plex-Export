@@ -298,7 +298,6 @@ var PLEX = {
 		
 		if(PLEX.current_item.num_seasons && PLEX.current_item.num_seasons>0) {
 			console.log(PLEX.current_item.seasons);
-			//popup_content += '<div id="popup_seasons"><h4>Season Browser</h4></div>';
 			popup_content += '<div id="popup_seasons"><h4>Season Browser</h4><table><tr><td id="popup_seasons_seasons"><ul>';
 			$.each(PLEX.current_item.seasons, function(key, season){
 				popup_content += '<li data-season="'+season.key+'">'+season.title+'</li>';
@@ -311,7 +310,8 @@ var PLEX = {
 				var season_key = $(this).attr("data-season");
 				var season = PLEX.current_item.seasons[season_key];
 				var html = '<ul>';
-				$.each(season.episodes, function(key, episode){
+				$.each(season.episode_sort_order, function(i, key){
+					var episode = season.episodes[key];
 					html += '<li data-season="'+season.key+'" data-episode="'+episode.key+'">'+episode.index+'. '+episode.title+'</li>';
 				});
 				html += '</ul>';

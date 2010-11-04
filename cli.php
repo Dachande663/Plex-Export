@@ -362,9 +362,11 @@ function load_data_for_show($el) {
 			plex_error('Could not load season data for '.$item['title'].' : '.$season['title']);
 		}
 		
+		$episode_sort_order = array();
 		foreach($xml2->Video as $el3) {
 			if($el3->attributes()->type!='episode') continue;
 			$episode_key = intval($el3->attributes()->ratingKey);
+			$episode_sort_order[intval($el3->attributes()->index)] = $episode_key;
 			$episode = array(
 				'key' => $episode_key,
 				'title' => strval($el3->attributes()->title),
@@ -377,6 +379,9 @@ function load_data_for_show($el) {
 			$season['episodes'][$episode_key] = $episode;
 			$season['actual_episodes']++;
 		}
+		
+		ksort($episode_sort_order);
+		$season['episode_sort_order'] = array_values($episode_sort_order);
 		
 		$seasons[$season_key] = $season;
 	}
