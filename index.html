@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head profile="http://www.w3.org/2005/10/profile">
+  <link rel="icon"
+        type="image/x-icon"
+        href="./assets/images/favicon.ico">
+
 	<meta charset=utf-8 />
 	<title>Plex Export</title>
 	<meta name="viewport" content="initial-scale=1,minimum-scale=1,maximum-scale=1" />
-	
+
 	<link rel="stylesheet" href="assets/css/style.css" type="text/css" />
 	<link rel="stylesheet" media="all and (max-device-width: 480px)" href="assets/css/iphone.css">
 	<link rel="stylesheet" media="all and (-webkit-min-device-pixel-ratio: 2" href="assets/css/iphone-retina.css" />
-	
+
 	<script src="assets/js/jquery.1.4.3.min.js"></script>
 	<script src="assets/js/utils.js"></script>
 	<script src="assets/js/plex.js"></script>
@@ -30,12 +34,12 @@
 	<a href="#sidebar" id="toggle_sidebar">toggle sidebar</a>
 
 	<div id="sidebar">
-		
+
 		<div class="sidebar-section">
 			<h2>Library</h2>
 			<ul class="sections-list" id="plex_section_list"></ul>
 		</div><!-- end .sidebar-section -->
-		
+
 		<div class="sidebar-section">
 			<h2>Sort</h2>
 			<ul class="generic-list" id="plex_sort_list">
@@ -44,16 +48,16 @@
 				<li data-sort="release">By release date</li>
 			</ul>
 		</div><!-- end .sidebar-section -->
-		
+
 		<div class="sidebar-section" id="plex_genre_list_section">
 			<h2>Genres</h2>
 			<ul class="generic-list" id="plex_genre_list"></ul>
 		</div><!-- end .sidebar-section -->
-		
+
 	</div><!-- end #sidebar -->
-	
+
 	<div id="main">
-		
+
 		<div id="section-header">
 			<div>
 				<input type="text" />
@@ -61,15 +65,15 @@
 				<p>Please wait while this section loads...</p>
 			</div>
 		</div><!-- end .section-header -->
-		
+
 		<div id="item-list-status">
 			<p>Loading data from PLEX...</p>
 		</div>
-		
+
 		<div id="item-list">
 			<ul></ul>
 		</div>
-		
+
 	</div><!-- end #main -->
 
 	<div id="footer">
