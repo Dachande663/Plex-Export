@@ -88,8 +88,15 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 			$sections[$i]['items'] = array();
 			continue;
 		}
+		
 		$num_items = count($items);
-		$total_items += $num_items;
+		if($section['type']=='show') {
+			$num_items_episodes = 0;
+			foreach($items as $item) $num_items_episodes += $item['num_episodes'];
+			$total_items += $num_items_episodes;
+		} else {
+			$total_items += $num_items;	
+		}
 
 		plex_log('Analysing media items in section...');
 
@@ -308,7 +315,7 @@ function load_data_for_show($el) {
 
 	$item = array(
 		'key' => $key,
-		'type' => 'movie',
+		'type' => 'show',
 		'thumb' => $thumb,
 		'title' => $title,
 		'rating' => ($_el->rating)?floatval($_el->rating):false,
