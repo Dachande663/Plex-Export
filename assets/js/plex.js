@@ -257,7 +257,6 @@ var PLEX = {
 		popup_sidebar_meta += '</ul>';
 		var popup_sidebar = '<div id="popup-sidebar"><img src="'+img_thumb+'" width="150" height="'+img_height+'" />'+popup_sidebar_meta+'</div>';
 
-
 		var rating_tag = '';
 		if(PLEX.current_item.user_rating != false) {
 			var rating = PLEX.current_item.user_rating;
@@ -299,9 +298,6 @@ var PLEX = {
 		if(PLEX.current_item.num_seasons && PLEX.current_item.num_seasons>0) {
 			popup_content += '<div id="popup_seasons"><h4>Season Browser</h4><table><tr><td id="popup_seasons_seasons"><ul>';
 			
-			
-			
-			//$.each(PLEX.current_item.seasons, function(key, season){
 			$.each(PLEX.current_item.season_sort_order, function(i, key){
 				var season = PLEX.current_item.seasons[key];
 				popup_content += '<li data-season="'+season.key+'">'+season.title+'</li>';
@@ -334,9 +330,7 @@ var PLEX = {
 				$("#popup_seasons_episode").html(html);
 			});
 			
-			
-		}
-		
+		} // end SEASON BROWSER
 		
 		popup_content += '</div>';
 
