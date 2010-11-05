@@ -344,9 +344,11 @@ function load_data_for_show($el) {
 	}
 	
 	$seasons = array();
+	$season_sort_order = array();
 	foreach($xml->Directory as $el2) {
 		if($el2->attributes()->type!='season') continue;
 		$season_key = intval($el2->attributes()->ratingKey);
+		$season_sort_order[intval($el2->attributes()->index)] = $season_key;
 		$season = array(
 			'key' => $season_key,
 			'title' => strval($el2->attributes()->title),
@@ -384,7 +386,9 @@ function load_data_for_show($el) {
 		$season['episode_sort_order'] = array_values($episode_sort_order);
 		
 		$seasons[$season_key] = $season;
-	}
+	}	
+	ksort($season_sort_order);
+	$item['season_sort_order'] = array_values($season_sort_order);
 	$item['num_seasons'] = count($seasons);
 	if($item['num_seasons']>0) $item['seasons'] = $seasons;
 

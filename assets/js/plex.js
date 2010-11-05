@@ -298,7 +298,12 @@ var PLEX = {
 		
 		if(PLEX.current_item.num_seasons && PLEX.current_item.num_seasons>0) {
 			popup_content += '<div id="popup_seasons"><h4>Season Browser</h4><table><tr><td id="popup_seasons_seasons"><ul>';
-			$.each(PLEX.current_item.seasons, function(key, season){
+			
+			
+			
+			//$.each(PLEX.current_item.seasons, function(key, season){
+			$.each(PLEX.current_item.season_sort_order, function(i, key){
+				var season = PLEX.current_item.seasons[key];
 				popup_content += '<li data-season="'+season.key+'">'+season.title+'</li>';
 			});
 			popup_content += '</ul></td><td id="popup_seasons_episodes"></td><td id="popup_seasons_episode"></td></tr></table></div>';
@@ -324,11 +329,8 @@ var PLEX = {
 				var episode_key = $(this).attr("data-episode");
 				var season = PLEX.current_item.seasons[season_key];
 				var episode = season.episodes[episode_key];
-				
 				var minutes = Math.round(episode.duration/60000);
-				
 				var html = '<h5>'+episode.title+'</h5><p class="meta">'+episode_tag(season,episode)+' | '+minutes+' '+inflect(minutes,'minute')+' | Rated '+episode.rating+'</p><p>'+episode.summary+'</p>';
-				
 				$("#popup_seasons_episode").html(html);
 			});
 			
