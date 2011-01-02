@@ -120,14 +120,15 @@ var PLEX = {
 
 		PLEX._item_list.html("");
 		var num_items = 0;
-
+		var html_string = '';
 		$.each(PLEX.current_section.sorts[PLEX.current_sort_key+"_"+PLEX.current_sort_order], function(i, key){
 			if(typeof items[key] == "undefined") return;
 			var item = items[key];
 			var thumb = (item.thumb==false)?"assets/images/default.png":item.thumb;
-			PLEX._item_list.append('<li data-item="'+item.key+'" class="item"><img src="assets/images/default.png" data-src="'+thumb+'" width="150" /><h4>'+item.title+'</h4></li>');
+			html_string += '<li data-item="'+item.key+'" class="item"><img src="assets/images/default.png" data-src="'+thumb+'" width="150" /><h4>'+item.title+'</h4></li>';
 			num_items++;
 		});
+		PLEX._item_list.html(html_string);
 
 		if(num_items==0) {
 			PLEX._section_meta.text("No items in this collection");
@@ -168,7 +169,6 @@ var PLEX = {
 
 
 	change_sort: function(arg_new_sort_key) {
-
 		var new_sort_key = "title";
 		switch(arg_new_sort_key) {
 			case "release": new_sort_key = "release"; break;
