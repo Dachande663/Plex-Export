@@ -108,7 +108,16 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 		$raw_section_genres = array();
 
 		foreach($items as $key=>$item) {
-			$sorts_title[$key] = (substr(strtolower($item['title']),0,4)=='the ')?substr($item['title'],4):$item['title'];
+			$title_lower = strtolower($item['title']);
+			$title_lower4 = substr($title_lower, 0, 4);
+			if($title_lower4=='the ' or $title_lower4=='der ' or $title_lower4=='die ' or $title_lower4=='das ') {
+				$title_sort = substr($item['title'],4);
+			} elseif(substr($title_lower, 0, 2)=='a ') {
+				 $title_sort = substr($item['title'],2);
+			} else {
+				$title_sort = $item['title'];
+			}
+			$sorts_title[$key] = $title_sort;
 			$sorts_release[$key] = @strtotime($item['release_date']);
 			$sorts_rating[$key] = ($item['user_rating'])?$item['user_rating']:$item['rating'];
 			if(is_array($item['genre']) and count($item['genre'])>0) {
@@ -116,7 +125,7 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 					$raw_section_genres[$genre]++;
 				}
 			}
-		}
+		} // end foreach: $items (for sorting)
 
 		asort($sorts_title, SORT_STRING);
 		asort($sorts_release, SORT_NUMERIC);
