@@ -359,10 +359,11 @@ var PLEX = {
 
 
 	run: function() {
-
+		
 		if(!PLEX.data_loaded) {
-			$.getJSON("plex-data/data.js", [], function(data){
-				PLEX.load_data(data);
+			$.get("plex-data/data.js", function(data){
+				eval(data); // unpack
+				PLEX.load_data(raw_plex_data);
 				return PLEX.run();
 			});
 			return;
