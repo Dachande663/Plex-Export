@@ -597,11 +597,6 @@ function check_dependancies() {
 		$errors = true;
 	}
 
-	if(!extension_loaded('gd')) {
-		plex_error('GD is not enabled');
-		$errors = true;
-	}
-
 	if(!ini_get('allow_url_fopen')) {
 		plex_error('Remote URL access is disabled (allow_url_fopen)');
 		$errors = true;
