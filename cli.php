@@ -21,6 +21,7 @@ plex_log('Welcome to the Plex Exporter v'.$plex_export_version);
 		'plex-url' => 'http://localhost:32400',
 		'data-dir' => 'plex-data',
 		'thumbnail-width' => 150,
+		'thumbnail-height' => 250,
 		'sections' => 'all'
 	);
 	$options = hl_parse_arguments($_SERVER['argv'], $defaults);
@@ -212,6 +213,7 @@ function load_items_for_section($section) {
 	foreach($object_to_loop as $el) {
 		$item = $object_parser($el);
 		if($item) $items[$item['key']] = $item;
+
 	}
 
 	return $items;
@@ -476,7 +478,7 @@ function generate_item_thumbnail($thumb_url, $key, $title) {
 
 	global $options;
 
-	$filename = '/thumb_'.$key.'.png';
+	$filename = '/thumb_'.$key.'.jpeg';
 	$save_filename = $options['absolute-data-dir'].$filename;
 	$return_filename = $options['data-dir'].$filename;
 
@@ -487,30 +489,21 @@ function generate_item_thumbnail($thumb_url, $key, $title) {
 		return false;
 	}
 
-	$source = $options['plex-url'].substr($thumb_url,1);
-	$img_data = @file_get_contents($source);
+	$source_url = $options['plex-url'].substr($thumb_url,1); # e.g. http://local:32400/library/metadata/123/thumb?=date
+	$transcode_url = $options['plex-url'].'photo/:/transcode?width='.$options['thumbnail-width'].'&height='.$options['thumbnail-height'].'&url='.urlencode($source_url);
+
+	$img_data = @file_get_contents($transcode_url);
 	if(!$img_data) {
 		plex_error('Could not load thumbnail for '.$title,' skipping');
 		return false;
 	}
 
-	$im = imagecreatefromstring($img_data);
-	$width = imagesx($im);
-
-	if($width > $options['thumbnail-width']) {
-		$height = imagesy($im);
-		$scale = $width / $options['thumbnail-width'];
-		$new_width = $options['thumbnail-width'];
-		$new_height = $height / $scale;
-		$old_image = $im;
-		$im = imagecreatetruecolor($new_width, $new_height);
-		imagecopyresampled($im, $old_image, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-		imagedestroy($old_image);
+	$result = @file_put_contents($save_filename, $img_data);
+	if(!$result) {
+		plex_error('Could not save thumbnail for '.$title,' skipping');
+		return false;
 	}
 
-	imagepng($im, $save_filename);
-    imagedestroy($im);
-	unset($img_data);
 	return $return_filename;
 
 } // end func: generate_item_thumbnail
