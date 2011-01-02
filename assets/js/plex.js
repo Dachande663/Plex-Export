@@ -125,7 +125,7 @@ var PLEX = {
 			if(typeof items[key] == "undefined") return;
 			var item = items[key];
 			var thumb = (item.thumb==false)?"assets/images/default.png":item.thumb;
-			html_string += '<li data-item="'+item.key+'" class="item"><img src="assets/images/default.png" data-src="'+thumb+'" width="150" /><h4>'+item.title+'</h4></li>';
+			html_string += '<li data-item="'+item.key+'" class="item"><img src="'+thumb+'" width="150" /><h4>'+item.title+'</h4></li>';
 			num_items++;
 		});
 		PLEX._item_list.html(html_string);
@@ -347,17 +347,6 @@ var PLEX = {
 	}, // end func: hide_item
 
 
-	lazy_load_images: function() {
-		var window_top = $(document).scrollTop() - PLEX.lazyload_threshold;
-		var window_bottom = window_top + $(window).height() + PLEX.lazyload_threshold;
-		$("img[data-src]", PLEX._item_list).each(function(){
-			var item_top = $(this).position().top;
-			if( item_top < window_top || item_top > window_bottom) return;
-			$(this).attr("src", $(this).attr("data-src")).removeAttr("data-src");
-		});
-	}, // end func: lazy_load_images
-
-
 	run: function() {
 		
 		if(!PLEX.data_loaded) {
@@ -414,10 +403,6 @@ var PLEX = {
 		PLEX._section_filter.keyup(function(){
 			PLEX.display_section(PLEX.current_section.key);
 		});
-
-		$(document).bind("scroll", function(){
-			PLEX.lazy_load_images();
-		}).trigger("scroll");
 
 		$("li", PLEX._item_list).live("click", function(){
 			PLEX.display_item($(this).attr("data-item"));
