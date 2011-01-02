@@ -29,10 +29,12 @@ var PLEX = {
 
 
 	display_sections_list: function() {
+		var section_list_html = '';
 		$.each(PLEX.section_display_order, function(i,key){
 			var section = PLEX.sections[key];
-			PLEX._sections_list.append('<li data-section="'+section.key+'" class="'+section.type+'"><em>'+number_format(section.num_items)+'</em><span>'+section.title+'</span></li>');
+			section_list_html += '<li data-section="'+section.key+'" class="'+section.type+'"><em>'+number_format(section.num_items)+'</em><span>'+section.title+'</span></li>';
 		});
+		PLEX._sections_list.html(section_list_html);
 	}, // end func: display_sections_list
 
 
