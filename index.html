@@ -10,6 +10,7 @@
 	<link rel="stylesheet" media="all and (max-device-width: 480px)" href="assets/css/iphone.css">
 	<link rel="stylesheet" media="all and (-webkit-min-device-pixel-ratio: 2)" href="assets/css/iphone-retina.css" />
 
+	<script src="assets/lang/en_US.js"></script>
 	<script src="assets/js/jquery.1.4.4.min.js"></script>
 	<script src="assets/js/utils.js"></script>
 	<script src="assets/js/plex.js"></script>
@@ -25,29 +26,29 @@
 
 	<div id="header">
 		<h1><span>Plex Export</span></h1>
-		<p><span>Library Items</span> <strong id="total_items"></strong></p>
+		<p><span class="i18n" data-i18n="title_header_library_items">Library Items</span> <strong id="total_items"></strong></p>
 	</div><!-- end #header -->
 
-	<a href="#sidebar" id="toggle_sidebar">toggle sidebar</a>
+	<a href="#sidebar" id="toggle_sidebar" class="i18n" data-i18n="toggle_sidebar">toggle sidebar</a>
 
 	<div id="sidebar">
 
 		<div class="sidebar-section">
-			<h2>Library</h2>
-			<ul class="sections-list" id="plex_section_list"><li>Loading...</li></ul>
+			<h2 class="i18n" data-i18n="title_section_list">Library</h2>
+			<ul class="sections-list" id="plex_section_list"><li class="i18n" data-i18n="section_list_loading">Loading...</li></ul>
 		</div><!-- end .sidebar-section -->
 
 		<div class="sidebar-section">
-			<h2>Sort</h2>
+			<h2 class="i18n" data-i18n="title_sort_list">Sort</h2>
 			<ul class="generic-list" id="plex_sort_list">
-				<li class="current" data-sort="title"><em>asc</em>By title</li>
-				<li data-sort="rating">By rating</li>
-				<li data-sort="release">By release date</li>
+				<li class="current" data-sort="title"><em class="i18n" data-i18n="sort_asc">asc</em><span class="i18n" data-i18n="sort_title">By title<span></li>
+				<li data-sort="rating" class="i18n" data-i18n="sort_rating">By rating</li>
+				<li data-sort="release" class="i18n" data-i18n="sort_release_date">By release date</li>
 			</ul>
 		</div><!-- end .sidebar-section -->
 
 		<div class="sidebar-section" id="plex_genre_list_section">
-			<h2>Genres</h2>
+			<h2 class="i18n" data-i18n="title_genre_list">Genres</h2>
 			<ul class="generic-list" id="plex_genre_list"></ul>
 		</div><!-- end .sidebar-section -->
 
@@ -58,13 +59,13 @@
 		<div id="section-header">
 			<div>
 				<input type="text" />
-				<h2>Loading</h2>
-				<p>Please wait while this section loads...</p>
+				<h2 class="i18n" data-i18n="init_loading_title">Loading</h2>
+				<p class="i18n" data-i18n="init_loading_message">Please wait while this section loads...</p>
 			</div>
 		</div><!-- end .section-header -->
 
 		<div id="item-list-status">
-			<p>Loading data from PLEX...</p>
+			<p class="i18n" data-i18n="init_loading_data_message">Loading data from PLEX...</p>
 		</div>
 
 		<div id="item-list">

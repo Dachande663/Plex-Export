@@ -47,7 +47,7 @@ var PLEX = {
 			PLEX.show_all_genres = false;
 			$("li", PLEX._sorts_list).removeClass("current");
 			$("li em", PLEX._sorts_list).remove();
-			$("li[data-sort="+PLEX.current_sort_key+"]").addClass("current").append("<em>"+PLEX.current_sort_order+"</em>");
+			$("li[data-sort="+PLEX.current_sort_key+"]").addClass("current").append("<em>"+_("sort_"+PLEX.current_sort_order)+"</em>");
 		}
 
 		PLEX.current_section = PLEX.sections[section_id];
@@ -82,8 +82,8 @@ var PLEX = {
 			});
 
 			if(num_hidden>0) {
-				list_html += '<li id="genre_show_all">Show '+num_hidden+' more...</li>';
-				list_html += '<li id="genre_hide_all">Show fewer...</li>';
+				list_html += '<li id="genre_show_all">'+_("genre_list_show_more", {num_hidden: num_hidden})+'</li>';
+				list_html += '<li id="genre_hide_all">'+_("genre_list_show_less")+'</li>';
 			}
 
 			PLEX._genre_list.html(list_html);
@@ -132,11 +132,11 @@ var PLEX = {
 		PLEX._item_list.html(html_string);
 
 		if(num_items==0) {
-			PLEX._section_meta.text("No items in this collection");
-			PLEX._item_list_status.html("<p>There are no items to display in this collection.</p>").show();
+			PLEX._section_meta.text(_("section_no_items_meta"));
+			PLEX._item_list_status.html("<p>"+_("section_no_items_status")+"</p>").show();
 		} else {
 			PLEX._item_list_status.hide();
-			PLEX._section_meta.text(number_format(num_items)+" "+inflect(num_items,"item")+" in this collection");
+			PLEX._section_meta.text(_("section_meta_text", {num_items: number_format(num_items), plural: inflect(num_items,"item")}));
 		}
 
 		$(document).trigger("scroll");
@@ -184,7 +184,7 @@ var PLEX = {
 
 		$("li", PLEX._sorts_list).removeClass("current");
 		$("li em", PLEX._sorts_list).remove();
-		$("li[data-sort="+PLEX.current_sort_key+"]", PLEX._sorts_list).addClass("current").append("<em>"+PLEX.current_sort_order+"</em>");
+		$("li[data-sort="+PLEX.current_sort_key+"]", PLEX._sorts_list).addClass("current").append("<em>"+_("sort_"+PLEX.current_sort_order)+"</em>");
 
 		PLEX.display_section(PLEX.current_section.key);
 
@@ -218,20 +218,17 @@ var PLEX = {
 
 	generate_item_content: function() {
 
-		var popup_header = '<div id="popup-header"><p class="right"><span class="popup-close">Close</span></p><p>Library &raquo; '+PLEX.current_section.title+' &raquo; '+PLEX.current_item.title+'</p></div>';
+		var popup_header = '<div id="popup-header"><p class="right"><span class="popup-close">'+_("popup_close")+'</span></p><p>'+_("popup_library_title")+' '+_("popup_library_separator")+' '+PLEX.current_section.title+' '+_("popup_library_separator")+' '+PLEX.current_item.title+'</p></div>';
 
 		var _current_item = $("li[data-item="+PLEX.current_item.key+"]", PLEX._item_list);
 		var previous_item_id = parseInt(_current_item.prev().attr("data-item"));
 		var next_item_id = parseInt(_current_item.next().attr("data-item"));
-
-
 		PLEX.previous_item_id = (previous_item_id>0)?previous_item_id:0;
 		PLEX.next_item_id = (next_item_id>0)?next_item_id:0;
 
-
 		var popup_footer = '<div id="popup-footer">';
-		if(next_item_id>0) popup_footer += '<span class="right" data-item="'+PLEX.current_section.items[next_item_id].key+'">'+PLEX.current_section.items[next_item_id].title+' &raquo;</span>';
-		if(previous_item_id>0) popup_footer += '<span data-item="'+PLEX.current_section.items[previous_item_id].key+'">&laquo; '+PLEX.current_section.items[previous_item_id].title+'</span></div>';
+		if(next_item_id>0) popup_footer += '<span class="right" data-item="'+PLEX.current_section.items[next_item_id].key+'">'+PLEX.current_section.items[next_item_id].title+' '+_("popup_next")+'</span>';
+		if(previous_item_id>0) popup_footer += '<span data-item="'+PLEX.current_section.items[previous_item_id].key+'">'+_("popup_previous")+' '+PLEX.current_section.items[previous_item_id].title+'</span></div>';
 		popup_footer += '<div class="clear"></div></div>';
 
 		var _img = $("img", _current_item);
@@ -246,14 +243,14 @@ var PLEX = {
 		var popup_sidebar_meta = '<ul>';
 		if(PLEX.current_item.duration > 0) {
 			var minutes = Math.round(PLEX.current_item.duration/60000);
-			popup_sidebar_meta += '<li>Duration: '+minutes+' '+inflect(minutes,'minute')+'</li>';
+			popup_sidebar_meta += '<li>'+_("item_duration")+': '+minutes+' '+inflect(minutes,'minute')+'</li>';
 		}
-		if(PLEX.current_item.studio != false) popup_sidebar_meta += '<li>Studio: '+PLEX.current_item.studio+'</li>';
-		if(PLEX.current_item.release_year != false) popup_sidebar_meta += '<li>Released: '+PLEX.current_item.release_year+'</li>';
-		if(PLEX.current_item.content_rating != false) popup_sidebar_meta += '<li>Rated: '+PLEX.current_item.content_rating+'</li>';
-		if(PLEX.current_item.num_seasons > 0) popup_sidebar_meta += '<li>Seasons: '+PLEX.current_item.num_seasons+'</li>';
-		if(PLEX.current_item.num_episodes > 0) popup_sidebar_meta += '<li>Episodes: '+PLEX.current_item.num_episodes+'</li>';
-		if(PLEX.current_item.view_count > 0) popup_sidebar_meta += '<li>Watched: '+PLEX.current_item.view_count+' '+inflect(PLEX.current_item.view_count,'time')+'</li>';
+		if(PLEX.current_item.studio != false) popup_sidebar_meta += '<li>'+_("item_studio")+': '+PLEX.current_item.studio+'</li>';
+		if(PLEX.current_item.release_year != false) popup_sidebar_meta += '<li>'+_("item_released")+': '+PLEX.current_item.release_year+'</li>';
+		if(PLEX.current_item.content_rating != false) popup_sidebar_meta += '<li>'+_("item_rated")+': '+PLEX.current_item.content_rating+'</li>';
+		if(PLEX.current_item.num_seasons > 0) popup_sidebar_meta += '<li>'+_("item_num_seasons")+': '+PLEX.current_item.num_seasons+'</li>';
+		if(PLEX.current_item.num_episodes > 0) popup_sidebar_meta += '<li>'+_("item_num_episodes")+': '+PLEX.current_item.num_episodes+'</li>';
+		if(PLEX.current_item.view_count > 0) popup_sidebar_meta += '<li>'+_("item_num_views")+': '+PLEX.current_item.view_count+' '+inflect(PLEX.current_item.view_count,'time')+'</li>';
 
 		popup_sidebar_meta += '</ul>';
 		var popup_sidebar = '<div id="popup-sidebar"><img src="'+img_thumb+'" width="150" height="'+img_height+'" />'+popup_sidebar_meta+'</div>';
@@ -283,21 +280,21 @@ var PLEX = {
 			PLEX.current_item.media
 		) {
 			popup_content += '<ul id="popup-content-meta">';
-			if(PLEX.current_item.director) popup_content += '<li><strong>Directed by:</strong> '+PLEX.current_item.director.join(", ")+'</li>';
-			if(PLEX.current_item.role) popup_content += '<li><strong>Starring:</strong> '+PLEX.current_item.role.join(", ")+'</li>';
-			if(PLEX.current_item.genre) popup_content += '<li><strong>Genre:</strong> '+PLEX.current_item.genre.join(", ")+'</li>';
+			if(PLEX.current_item.director) popup_content += '<li><strong>'+_("item_director_list")+':</strong> '+PLEX.current_item.director.join(", ")+'</li>';
+			if(PLEX.current_item.role) popup_content += '<li><strong>'+_("item_cast_list")+':</strong> '+PLEX.current_item.role.join(", ")+'</li>';
+			if(PLEX.current_item.genre) popup_content += '<li><strong>'+_("item_genre_list")+':</strong> '+PLEX.current_item.genre.join(", ")+'</li>';
 			if(PLEX.current_item.media) {
 				var media = PLEX.current_item.media;
-				popup_content += '<li><strong>Video:</strong> codec: '+media.video_codec+', framerate: '+media.video_framerate+ ((media.video_resolution != undefined && media.video_resolution>0)?', vert: '+media.video_resolution:'') + ((media.aspect_ratio != undefined && media.aspect_ratio>0)?', aspect ratio: '+media.aspect_ratio:'') +'</li>';
-				popup_content += '<li><strong>Audio:</strong> codec: '+media.audio_codec+', channels: '+media.audio_channels+'</li>';
-				if(media.total_size != false) popup_content += '<li><strong>File:</strong> '+hl_bytes_to_human(media.total_size)+' @ '+media.bitrate+'bps</li>';
+				popup_content += '<li><strong>'+_("item_video_info")+':</strong> '+_("item_video_codec")+': '+media.video_codec+', '+_("item_video_framerate")+': '+media.video_framerate+ ((media.video_resolution != undefined && media.video_resolution>0)?', '+_("item_video_vertical_resolution")+': '+media.video_resolution:'') + ((media.aspect_ratio != undefined && media.aspect_ratio>0)?', '+_("item_video_aspect_ratio")+': '+media.aspect_ratio:'') +'</li>';
+				popup_content += '<li><strong>'+_("item_audio_info")+':</strong> '+_("item_audio_codec")+': '+media.audio_codec+', '+_("item_audio_channels")+': '+media.audio_channels+'</li>';
+				if(media.total_size != false) popup_content += '<li><strong>'+_("item_file_info")+':</strong> '+hl_bytes_to_human(media.total_size)+' @ '+media.bitrate+'bps</li>';
 			}
 			popup_content += '</ul>';
 		}
 		
 		
 		if(PLEX.current_item.num_seasons && PLEX.current_item.num_seasons>0) {
-			popup_content += '<div id="popup_seasons"><h4>Season Browser</h4><table><tr><td id="popup_seasons_seasons"><ul>';
+			popup_content += '<div id="popup_seasons"><h4>'+_("item_season_browser")+'</h4><table><tr><td id="popup_seasons_seasons"><ul>';
 			
 			$.each(PLEX.current_item.season_sort_order, function(i, key){
 				var season = PLEX.current_item.seasons[key];
@@ -348,9 +345,18 @@ var PLEX = {
 	}, // end func: hide_item
 
 
+	convert_i18n_strings: function() {
+		$(".i18n").each(function(){
+			var key = $(this).attr("data-i18n");
+			if(!key) return;
+			$(this).text(_(key));
+		});
+	}, // end func: convert_i18n_strings
+
 	run: function() {
 		
 		if(!PLEX.data_loaded) {
+			PLEX.convert_i18n_strings();
 			$.get("plex-data/data.js", function(data){
 				eval(data); // unpack
 				PLEX.load_data(raw_plex_data);
