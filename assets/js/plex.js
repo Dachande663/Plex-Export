@@ -14,7 +14,6 @@ var PLEX = {
 	filter_timeout: false,
 	filter_delay: 350,
 	popup_visible: false,
-	lazyload_threshold: 200,
 
 
 	load_data: function(aData) {
