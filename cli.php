@@ -23,11 +23,13 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 		'data-dir' => 'plex-data',
 		'thumbnail-width' => 150,
 		'thumbnail-height' => 250,
-		'sections' => 'all'
+		'sections' => 'all',
+		'sort-skip-words' => 'a,the,der,die,das'
 	);
 	$options = hl_parse_arguments($_SERVER['argv'], $defaults);
 	if(substr($options['plex-url'],-1)!='/') $options['plex-url'] .= '/'; // Always have a trailing slash
 	$options['absolute-data-dir'] = dirname(__FILE__).'/'.$options['data-dir']; // Run in current dir (PHP CLI defect)
+	$options['sort-skip-words'] = (array) explode(',', $options['sort-skip-words']); # comma separated list of words to skip for sorting titles
 	check_dependancies(); // Check everything is enabled as necessary
 
 
@@ -108,16 +110,17 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 		$raw_section_genres = array();
 
 		foreach($items as $key=>$item) {
-			$title_lower = strtolower($item['title']);
-			$title_lower4 = substr($title_lower, 0, 4);
-			if($title_lower4=='the ' or $title_lower4=='der ' or $title_lower4=='die ' or $title_lower4=='das ') {
-				$title_sort = substr($item['title'],4);
-			} elseif(substr($title_lower, 0, 2)=='a ') {
-				 $title_sort = substr($item['title'],2);
-			} else {
-				$title_sort = $item['title'];
+			
+			$title_sort = strtolower($item['title']);
+			$title_first_space = strpos($title_sort, ' ');
+			if($title_first_space>0) {
+				$title_first_word = substr($title_sort, 0, $title_first_space);
+				if(in_array($title_first_word, $options['sort-skip-words'])) {
+					$title_sort = substr($title_sort, $title_first_space+1);
+				}
 			}
 			$sorts_title[$key] = $title_sort;
+			
 			$sorts_release[$key] = @strtotime($item['release_date']);
 			$sorts_rating[$key] = ($item['user_rating'])?$item['user_rating']:$item['rating'];
 			if(is_array($item['genre']) and count($item['genre'])>0) {
