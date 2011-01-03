@@ -23,7 +23,7 @@ var i18n = {
 	section_list_loading: "lade...",
 	section_no_items_meta: "keine Einträge in diesem Bereich",
 	section_no_items_status: "In diesem Bereich sind keine Einträge.",
-	section_meta_text: "%num_items% %plural% in diesem Bereich",
+	section_meta_text: "%num_items% Einträge in diesem Bereich",
 
 	popup_library_title: "Bibliothek",
 	popup_library_separator: "&raquo;",
