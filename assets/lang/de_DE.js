@@ -1,6 +1,6 @@
 /*
 	Language: German (de_DE)
-	Author: Sevil
+	Author: Sevil @forums.plexapp.com
 	Modified: 2011-01-03
 */
 
