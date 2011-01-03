@@ -33,7 +33,7 @@ var i18n = {
 
 	item_duration: "Länge",
 	item_studio: "Studio",
-	item_released: "Erscheinungsdatum",
+	item_released: "Jahr",
 	item_rated: "Bewertung",
 	item_num_seasons: "Staffeln",
 	item_num_episodes: "Episoden",
@@ -54,7 +54,7 @@ var i18n = {
 
 	sort_title: "nach Titel",
 	sort_rating: "nach Bewertung",
-	sort_release_date: "nach Erscheinungsdatum",
+	sort_release_date: "nach Jahr",
 	sort_asc: "aufsteigend",
 	sort_desc: "absteigend",
 
