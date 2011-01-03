@@ -58,6 +58,7 @@ var i18n = {
 	sort_asc: "aufsteigend",
 	sort_desc: "absteigend",
 
+	genre_list_all: "Alle",
 	genre_list_show_more: "zeige %num_hidden% mehr...",
 	genre_list_show_less: "zeige weniger...",
 

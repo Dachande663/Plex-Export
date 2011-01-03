@@ -69,7 +69,7 @@ var PLEX = {
 
 			var num_to_show_before_hiding = 5;
 			var count = num_hidden = 0;
-			var list_html = '<li data-genre="all"><em>'+PLEX.current_section.num_items+'</em>All</li>';
+			var list_html = '<li data-genre="all"><em>'+PLEX.current_section.num_items+'</em>'+_("genre_list_all")+'</li>';
 
 			$.each(genres, function(i, genre){
 				count++;
