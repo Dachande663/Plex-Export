@@ -11,7 +11,7 @@
 */
 $timer_start = microtime(true);
 $plex_export_version = 1;
-ini_set('memory_limit', '128M');
+ini_set('memory_limit', '512M');
 set_error_handler('plex_error_handler');
 error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 
@@ -179,8 +179,9 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 	plex_log('Generating and minifying JSON output, this may take some time...');
 	$raw_json = json_encode($output);
 	$raw_js = 'var raw_plex_data = '.$raw_json.';';
-	$myPacker = new JavaScriptPacker($raw_js); # See bottom of file for relevant Class
-	$packed_js = $myPacker->pack();
+	//$myPacker = new JavaScriptPacker($raw_js); # See bottom of file for relevant Class
+	//$packed_js = $myPacker->pack();
+	$packed_js = $raw_js;
 	if(!$packed_js) {
 		plex_error('Could not minify JSON output, aborting.');
 		exit();
