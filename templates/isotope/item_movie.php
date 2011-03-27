@@ -55,7 +55,7 @@
 		
 		<div class="plex-item-header">
 			<div>
-				<?php if(!$this->getThemeOption('watch-online')): ?>
+				<?php if($this->getThemeOption('watch-online')): ?>
 					<span class="plex-watch-online-link">Watch Online</span>
 				<?php endif; ?>
 				<h2><?php echo $item->getTitle(); ?></h2>

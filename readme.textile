@@ -1,0 +1,37 @@
+h1. PlexExport Version 2.0
+
+Welcome to version two of Plex Export, a tool to generate a HTML version of your Plex library that you can share online. Plex Export only needs to connect to your Plex Media Server when generating your library, after that you can host it online anywhere!
+
+h2. Instructions
+
+# Download Plex Export v2 to your computer
+# Open Terminal.app (or equivalent)
+# Drag the cli.php file into Terminal
+# Specify any options (see below)
+# Press return and wait while Plex Export works it's magic
+# Plex Export will create a directory (by default "export") which contains your Plex Export library!
+
+The first time Plex Export runs it will need to fetch a lot of data (item information and images), subsequent updates will be much faster.
+
+h3. Options
+
+When running Plex Export you can specify multiple options to change its behaviour (please note these may change). To specify an option, use the following format:
+
+<pre>
+cli.php -option-name=value -option2="A value with spaces"
+</pre>
+
+* -plex-url: change where Plex Export looks for your Plex Media server, by default localhost:32400
+* -sections: A comma separated list of section names and/or IDs to export e.g. "My Movies,3"
+* -template: Currently only the "isotope" theme is provided, but additional themes can be specified.
+* -output-dir: The full path to an alternative output directory e.g. /Users/berkley/my-plex-export/
+* -lang: Specify a language to use for the final export, if you're interested in helping translate Plex Export get in touch!
+* -flush-export: Force Plex Export to remove the current export data and start fresh, downloading everything again.
+
+h3. Bugs & Features
+
+Plex Export v2 is a complete rewrite of Plex Export v1, sharing only a few template files in common. Therefore there will be bugs. The primary focus is currently on updating the template to add more functionality and robustness. Almost all the data you could want is available, it just hasn't been "plugged in" yet.
+
+Please leave bug reports, comments and feature requests on the official Plex Forums post.
+
+http://forums.plexapp.com/index.php/topic/19053-plex-web-export/
