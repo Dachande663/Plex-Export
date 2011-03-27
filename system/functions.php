@@ -210,3 +210,19 @@ function get_time_elapsed($precision=3) {
 } // end func: get_time_elapsed
 
 
+
+/**
+ * Print_r wrapped in <pre>
+ **/
+function _print_r() {
+	echo '<pre>';
+	foreach(func_get_args() as $a) print_r($a);
+	echo '</pre>';
+} // end func: _print_r
+
+
+
+
+
+
+

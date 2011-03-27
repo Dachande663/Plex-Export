@@ -235,10 +235,36 @@ function isotope_sort_obj($a, $b) {
 					<li><a href="#sort" data-sort="lastViewedAt" data-sort-order="desc">Recently Viewed<em></em></a></li>
 				</ul>
 				
-				<?php if($section->getNumValuesForSort('rating')>0): $filter_ratings = $section->getValuesForSort('rating'); ?>
+				<?php if($section->getNumValuesForSort('rating')>0):
+					
+					# original ratings are ordered by count, not stars
+					$raw_filter_ratings = $section->getValuesForSort('rating');
+					$filter_ratings = array();
+					
+					if(array_key_exists(9, $raw_filter_ratings) or array_key_exists(10, $raw_filter_ratings)) $filter_ratings[5] = array('label'=>'5 Stars', 'count'=>0);
+					if(array_key_exists(7, $raw_filter_ratings) or array_key_exists(8, $raw_filter_ratings)) $filter_ratings[4] = array('label'=>'4 Stars', 'count'=>0);
+					if(array_key_exists(5, $raw_filter_ratings) or array_key_exists(6, $raw_filter_ratings)) $filter_ratings[3] = array('label'=>'3 Stars', 'count'=>0);
+					if(array_key_exists(3, $raw_filter_ratings) or array_key_exists(4, $raw_filter_ratings)) $filter_ratings[2] = array('label'=>'2 Stars', 'count'=>0);
+					if(array_key_exists(1, $raw_filter_ratings) or array_key_exists(2, $raw_filter_ratings)) $filter_ratings[1] = array('label'=>'1 Star', 'count'=>0);
+					
+					if(array_key_exists(1, $raw_filter_ratings)) $filter_ratings[1]['count'] += $raw_filter_ratings[1]['count'];
+					if(array_key_exists(2, $raw_filter_ratings)) $filter_ratings[1]['count'] += $raw_filter_ratings[2]['count'];
+					if(array_key_exists(3, $raw_filter_ratings)) $filter_ratings[2]['count'] += $raw_filter_ratings[3]['count'];
+					if(array_key_exists(4, $raw_filter_ratings)) $filter_ratings[2]['count'] += $raw_filter_ratings[4]['count'];
+					if(array_key_exists(5, $raw_filter_ratings)) $filter_ratings[3]['count'] += $raw_filter_ratings[5]['count'];
+					if(array_key_exists(6, $raw_filter_ratings)) $filter_ratings[3]['count'] += $raw_filter_ratings[6]['count'];
+					if(array_key_exists(7, $raw_filter_ratings)) $filter_ratings[4]['count'] += $raw_filter_ratings[7]['count'];
+					if(array_key_exists(8, $raw_filter_ratings)) $filter_ratings[4]['count'] += $raw_filter_ratings[8]['count'];
+					if(array_key_exists(9, $raw_filter_ratings)) $filter_ratings[5]['count'] += $raw_filter_ratings[9]['count'];
+					if(array_key_exists(10, $raw_filter_ratings)) $filter_ratings[5]['count'] = $raw_filter_ratings[10]['count'];
+					
+					?>
 					<h2>Rating</h2>
 					<ul class="plex-generic-list plex-section-filter">
 						<li><a class="current" href="#rating" data-filter-key="rating" data-filter-value="*">Show All</a></li>
+						
+						
+						
 						<?php foreach($filter_ratings as $id=>$rating): ?>
 							<li><a href="#rating" data-filter-key="rating" data-filter-value="<?php echo $id; ?>"><?php echo $rating['label']; ?> <em><?php echo number_format($rating['count']); ?></em></a></li>
 						<?php endforeach; ?>
