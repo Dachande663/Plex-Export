@@ -25,6 +25,7 @@ class PlexExport {
 		$cwd = substr($cwd, 0, -14); # remove system/classes
 		$this->dir_root = $cwd;
 		$this->dir_templates = $this->dir_root.'templates/';
+		$this->dir_cache = $this->dir_root.'cache/';
 	} // end func: __construct
 	
 	
@@ -42,11 +43,20 @@ class PlexExport {
 		
 		
 		_log('Task 1 of 2: Scanning Plex Media Server Library');
-		_log('Gathering item information (this may take a while)');
-		$library = $api->get_library($this->options->sections);
-		# @todo cache library
-		#file_put_contents('library.serialized.php', serialize($library));
-		#$library = unserialize(file_get_contents($this->dir_root.'library.serialized.php'));
+		$library = $this->load_library_from_cache();
+		$cache_hit = true;
+		if(!$library) {
+			_log('Gathering item information (this may take a while)');
+			$library = $api->get_library($this->options->sections);
+			if($library) {
+				$this->add_library_to_cache($library);
+				$cache_hit = false;
+			}
+		} else {
+			_log('Reusing last scan from cache');
+		}
+		
+		
 		if(!$library or $library->getNumSections()==0 or $library->getNumItems()==0) _errord('No sections or items found in Library, aborting');
 		_log('Library scan completed, found '.$library->getNumItems().' '.inflect($library->getNumItems(),'item').' in '.$library->getNumSections().' '.inflect($library->getNumSections(),'section'));
 		
@@ -63,10 +73,76 @@ class PlexExport {
          Items: '.$library->getNumItems().'
          Template: '.$this->options->template.'
          Time: '.get_time_elapsed().' seconds
+         Cache: '.( ($cache_hit) ? 'Yes' : 'No' ).'
          Location: '.$this->options->output_dir);
 		
 		
 	} // end func: init
+	
+	
+	
+	/**
+	 * Loads a cached library from disk or returns false if invalid
+	 * @todo clear existing cache
+	 **/
+	private function load_library_from_cache() {
+		
+		if($this->options->flush_library) return false;
+		
+		$cache_file = $this->get_cache_filename();
+		if(!file_exists($cache_file)) return false;
+		
+		$cache_created = filemtime($cache_file);
+		if($cache_created==0 or $cache_created + $this->options->library_cache_for < time()) return false;
+		
+		$cache_str = file_get_contents($cache_file);
+		if(!$cache_str or strlen($cache_str)==0) return false;
+		
+		$cache_data = unserialize($cache_str);
+		if(!$cache_data) return false;
+		
+		$class = get_class($cache_data);
+		if($class != 'PlexLibrary') return false;
+		
+		return $cache_data;
+	} // end func: load_library_from_cache
+	
+	
+	
+	/**
+	 * Caches a library instance to disk
+	 **/
+	private function add_library_to_cache($library) {
+		
+		if(!file_exists($this->dir_cache)) {
+			$mk = mkdir($this->dir_cache, 0777, true);
+			if(!$mk) return false;
+		}
+		
+		$cache_file = $this->get_cache_filename();
+		$cache_str = serialize($library);
+		$result = file_put_contents($cache_file, $cache_str);
+		if($result==0) return false;
+		
+		return true;
+	} // end func: add_library_to_cache
+	
+	
+	
+	/**
+	 * Returns cache filename, based on current options
+	 **/
+	private function get_cache_filename() {
+		
+		# Use only options that when changed will affect the library
+		$opts = array(
+			'plex-url'=>$this->options->plex_url,
+			'sections'=>$this->options->sections
+		);
+		$cache_file = $this->dir_cache.'library.'.md5(serialize($opts)).'.cache';
+		
+		return $cache_file;
+	} // end func: get_cache_filename
 	
 	
 	
@@ -83,6 +159,9 @@ class PlexExport {
 			'template' => self::DEFAULT_TEMPLATE,
 			'output_dir' => $this->dir_root.self::DEFAULT_OUTPUT_DIR.'/',
 			'lang' => 'en_US',
+			'flush' => false,
+			'flush_library' => false,
+			'library_cache_for' => 3600,
 			'flush_export' => false
 		);
 		
@@ -110,7 +189,17 @@ class PlexExport {
 			if(!$make_output_dir) throw new Exception('The selected output location could not be found: '.$options->output_dir);
 		}
 		
+		$options->flush = (bool) $options->flush;
+		$options->flush_library = (bool) $options->flush_library;
 		$options->flush_export = (bool) $options->flush_export;
+		if($options->flush) {
+			$options->flush_library = true;
+			$options->flush_export = true;
+		}
+		
+		$options->library_cache_for = absint($options->library_cache_for);
+		if($options->library_cache_for<=0 or $options->library_cache_for>86400) $options->library_cache_for = $defaults['library_cache_for'];
+		
 		$options->lang_dir = $this->dir_root.'system/lang/';
 		
 		return $options;

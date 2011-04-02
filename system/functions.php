@@ -222,7 +222,14 @@ function _print_r() {
 
 
 
-
+/**
+ * Var_dump wrapped in <pre>
+ **/
+function _var_dump() {
+	echo '<pre>';
+	foreach(func_get_args() as $a) var_dump($a);
+	echo '</pre>';
+} // end func: _var_dump
 
 
 
