@@ -3,111 +3,71 @@
 global $people; $people = array();
 global $items; $items = array();
 $known_guids = array();
+$include_just_actors = ($this->getThemeOption('just-actors', false)) ? true : false;
 
 
 # Get all items and actors
 foreach($library->getSections() as $section) {
 	
+	if($section->getType() != 'movie' and $section->getType() != 'show') continue; # only do movies and tv
 	
-	#if($section->getType() != 'movie') continue; # only deal with movies for now
-	
-	
-	
-	switch($section->getType()) {
+	foreach($section->getItems() as $item) {
+		if($item->getNumObjectsOfType('role')==0) continue;
+		if(array_key_exists($item->getGUID(), $known_guids)) continue;
+		$known_guids[$item->getGUID()] = true;
 		
-		case 'movie':
-			foreach($section->getItems() as $item) {
-				if($item->getNumObjectsOfType('role')==0) continue;
-				if(array_key_exists($item->getGUID(), $known_guids)) continue;
-				$known_guids[$item->getGUID()] = true;
-				
-				if(!array_key_exists('i_'.$item->getKey(), $items)) {
-					$items['i_'.$item->getKey()] = array(
-						'title' => $item->getTitle(),
-						'num_people' => 0,
-						'people' => array()
-					);
-				}
-				
-				$item_people = array();
-				if($item->getNumObjectsOfType('role')>0) $item_people = $item->getObjectsOfType('role');
+		if(!array_key_exists('i_'.$item->getKey(), $items)) {
+			$items['i_'.$item->getKey()] = array(
+				'title' => $item->getTitle(),
+				'num_people' => 0,
+				'people' => array()
+			);
+		}
+		
+		$item_people = array();
+		
+		if($section->getType() == 'movie') {
+			
+			if($item->getNumObjectsOfType('role')>0) $item_people = $item->getObjectsOfType('role');
+			if(!$include_just_actors) {
 				if($item->getNumObjectsOfType('director')>0) $item_people = $item_people + $item->getObjectsOfType('director');
 				if($item->getNumObjectsOfType('writer')>0) $item_people = $item_people + $item->getObjectsOfType('writer');
-				
-				if(count($item_people)>0) {
-					foreach($item_people as $person_id=>$person_title) {
-						$items['i_'.$item->getKey()]['num_people']++;
-						$items['i_'.$item->getKey()]['people']['p_'.$person_id] = 'p_'.$person_id;
-						if(!array_key_exists('p_'.$person_id, $people)) {
-							$people['p_'.$person_id] = array(
-								'title' => $person_title,
-								'num_items' => 0,
-								'items' => array()
-							);
-						}
-						$people['p_'.$person_id]['num_items']++;
-						$people['p_'.$person_id]['items']['i_'.$item->getKey()] = 'i_'.$item->getKey();
-					}
-				} # end foreach role
-				
-			} # end foreach: getItems()
+			}
 			
-			break;
-		
-		
-		
-		
-		case 'show':
-			foreach($section->getItems() as $item) {
-				
-				if(!array_key_exists('i_'.$item->getKey(), $items)) {
-					$items['i_'.$item->getKey()] = array(
-						'title' => $item->getTitle(),
-						'num_people' => 0,
-						'people' => array()
-					);
-				}
-				
-				$item_people = array();
-				
-				
-				foreach($item->getSeasons() as $season) {
-					foreach($season->getEpisodes() as $episode) {
-						if($episode->getNumObjectsOfType('role')>0) $item_people = $item_people + $episode->getObjectsOfType('role');
+		} elseif($section->getType() == 'show') {
+			
+			foreach($item->getSeasons() as $season) {
+				foreach($season->getEpisodes() as $episode) {
+					if($episode->getNumObjectsOfType('role')>0) $item_people = $item_people + $episode->getObjectsOfType('role');
+					if(!$include_just_actors) {
 						if($episode->getNumObjectsOfType('director')>0) $item_people = $item_people + $episode->getObjectsOfType('director');
 						if($episode->getNumObjectsOfType('writer')>0) $item_people = $item_people + $episode->getObjectsOfType('writer');
 					}
 				}
-				
-				if(count($item_people)>0) {
-					foreach($item_people as $person_id=>$person_title) {
-						$items['i_'.$item->getKey()]['num_people']++;
-						$items['i_'.$item->getKey()]['people']['p_'.$person_id] = 'p_'.$person_id;
-						if(!array_key_exists('p_'.$person_id, $people)) {
-							$people['p_'.$person_id] = array(
-								'title' => $person_title,
-								'num_items' => 0,
-								'items' => array()
-							);
-						}
-						$people['p_'.$person_id]['num_items']++;
-						$people['p_'.$person_id]['items']['i_'.$item->getKey()] = 'i_'.$item->getKey();
-					}
-				} # end foreach role
-				
-				
 			}
-			break;
-	} # end switch
-	
-	
-	
-
-	
-	
-	
+			
+		}
+		
+		if(count($item_people)>0) {
+			foreach($item_people as $person_id=>$person_title) {
+				$items['i_'.$item->getKey()]['num_people']++;
+				$items['i_'.$item->getKey()]['people']['p_'.$person_id] = 'p_'.$person_id;
+				if(!array_key_exists('p_'.$person_id, $people)) {
+					$people['p_'.$person_id] = array(
+						'title' => $person_title,
+						'num_items' => 0,
+						'items' => array()
+					);
+				}
+				$people['p_'.$person_id]['num_items']++;
+				$people['p_'.$person_id]['items']['i_'.$item->getKey()] = 'i_'.$item->getKey();
+			}
+		} # end foreach role
+		
+	} # end foreach: getItems()
 	
 } # end foreach: getSections()
+
 
 
 # Eliminate any people who only have one item
@@ -120,11 +80,13 @@ foreach($people as $person_id=>$person) {
 }
 
 
+
 # Eliminate any items with less people than allowed
 foreach($items as $item_id=>$item) {
 	if(count($item['people'])>=1) continue;
 	unset($items[$item_id]);
 }
+
 
 
 # Output items and people with relationships, sort by most popular
