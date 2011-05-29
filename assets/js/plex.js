@@ -47,6 +47,7 @@ var PLEX = {
 			PLEX.current_sort_order = "asc";
 			PLEX.current_genre = "all";
 			PLEX.current_director = "all";
+			PLEX.current_seen = "all";
 			PLEX.show_all_directors = false;
 			$("li", PLEX._sorts_list).removeClass("current");
 			$("li em", PLEX._sorts_list).remove();
@@ -102,6 +103,7 @@ var PLEX = {
 			return 0;
 		});
 		PLEX.display_director_list(item_count, directors);
+		PLEX.display_seen_list("all");
 
 	}, // end func: display_section
 
@@ -191,11 +193,45 @@ var PLEX = {
 		PLEX._director_list_section.show();
 
 	},
+	
+	display_seen_list: function(seen) {
+		if (PLEX.current_section.type != "movie") {
+			PLEX._seen_list_section.hide();
+			return;
+		};
+		
+		var list_html = '<li data-seen="all"><em>'+PLEX.current_section.num_items+'</em>All</li>';
+		
+		seen_count = 0;
+		$.each(PLEX.filter_items_by_seen(PLEX.current_section.items, "true"), function (k, v) {
+			seen_count++;
+		});
+		
+		list_html += '<li data-seen="true"><em>'+seen_count+'</em>Seen</li>';
+		
+		unseen_count = 0;
+		$.each(PLEX.filter_items_by_seen(PLEX.current_section.items, "false"), function (k, v) {
+			unseen_count++;
+		});
+		
+		list_html += '<li data-seen="false"><em>'+unseen_count+'</em>Not Seen</li>';
+		
+		PLEX._seen_list.html(list_html);
+		
+		$("li", PLEX._seen_list).removeClass("current");
+		$("li[data-seen="+PLEX.current_seen+"]").addClass("current");
+		
+		PLEX._seen_list_section.show();
+	},
 
 
 	display_items: function(items) {
 
 		var items = PLEX.current_section.items
+		
+		if (PLEX.current_seen != "all") {
+			items = PLEX.filter_items_by_seen(items, PLEX.current_seen);
+		};
 
 		if(PLEX._section_filter.val()!="") {
 			items = PLEX.filter_items_by_term(items, PLEX._section_filter.val());
@@ -268,6 +304,21 @@ var PLEX = {
 		});
 		return items_to_show;
 	}, // end func: filter_items_by_director
+	
+	filter_items_by_seen: function(all_items, seen) {
+		if(seen == "all") return all_items;
+		var items_to_show = {};
+		$.each(all_items, function(key, item) {
+			if (seen == "true") {
+				if (item.view_count == 0) return;
+			};
+			if (seen == "false") {
+				if (item.view_count > 0) return;
+			};
+			items_to_show[key] = item;
+		});
+		return items_to_show;
+	},
 
 
 	change_sort: function(arg_new_sort_key) {
@@ -305,6 +356,12 @@ var PLEX = {
 		PLEX.current_director = director;
 		PLEX.display_section(PLEX.current_section.key);
 	}, // end func: change_director
+	
+	change_seen: function(seen) {
+		if(typeof seen == "undefined" || seen == PLEX.current_seen) return;
+		PLEX.current_seen = seen;
+		PLEX.display_section(PLEX.current_section.key);
+	},
 
 
 	display_item: function(item_id) {
@@ -475,6 +532,8 @@ var PLEX = {
 		PLEX._genre_list = $("#plex_genre_list");
 		PLEX._director_list_section = $("#plex_director_list_section").hide();
 		PLEX._director_list = $("#plex_director_list");
+		PLEX._seen_list_section = $("#plex_seen_list_section");
+		PLEX._seen_list = $("#plex_seen_list");
 		PLEX._section_title = $("#section-header h2");
 		PLEX._section_meta = $("#section-header p");
 		PLEX._section_filter = $("#section-header input");
@@ -500,6 +559,10 @@ var PLEX = {
 
 		$("li", PLEX._director_list).live("click", function(){
 			PLEX.change_director($(this).attr('data-director'));
+		});
+		
+		$("li", PLEX._seen_list).live("click", function(){
+			PLEX.change_seen($(this).attr('data-seen'));
 		});
 
 		$("#genre_show_all").live("click", function(){
