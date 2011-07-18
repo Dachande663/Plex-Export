@@ -173,6 +173,7 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 		'status' => 'success',
 		'version' => $plex_export_version,
 		'last_generated' => time()*1000,
+		'last_updated' => 'last updated : '.date('Y-m-d - H:i',time()),
 		'total_items' => $total_items,
 		'num_sections' => $num_sections,
 		'section_display_order' => $section_display_order,
