@@ -326,6 +326,7 @@ var PLEX = {
 		switch(arg_new_sort_key) {
 			case "release": new_sort_key = "release"; break;
 			case "rating": new_sort_key = "rating"; break;
+			case "addedAt": new_sort_key = "addedAt"; break;
 		}
 
 		if(new_sort_key == PLEX.current_sort_key) {
