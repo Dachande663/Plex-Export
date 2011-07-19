@@ -106,7 +106,7 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 
 		plex_log('Analysing media items in section...');
 
-		$sorts_title = $sorts_release = $sorts_rating = array();
+		$sorts_title = $sorts_release = $sorts_rating = $sorts_added_at = array();
 		$raw_section_genres = array();
 
 		foreach($items as $key=>$item) {
@@ -120,7 +120,6 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 				}
 			}
 			$sorts_title[$key] = $title_sort;
-			
 			$sorts_release[$key] = @strtotime($item['release_date']);
 			$sorts_rating[$key] = ($item['user_rating'])?$item['user_rating']:$item['rating'];
 			if(is_array($item['genre']) and count($item['genre'])>0) {
@@ -128,16 +127,20 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 					$raw_section_genres[$genre]++;
 				}
 			}
+			$sorts_added_at[$key] = $item['addedAt'];
 		} // end foreach: $items (for sorting)
 
 		asort($sorts_title, SORT_STRING);
 		asort($sorts_release, SORT_NUMERIC);
+		asort($sorts_added_at, SORT_NUMERIC);
 		asort($sorts_rating, SORT_NUMERIC);
 		$sorts['title_asc'] = array_keys($sorts_title);
 		$sorts['release_asc'] = array_keys($sorts_release);
+		$sorts['addedAt_asc'] = array_keys($sorts_added_at);
 		$sorts['rating_asc'] = array_keys($sorts_rating);
 		$sorts['title_desc'] = array_reverse($sorts['title_asc']);
 		$sorts['release_desc'] = array_reverse($sorts['release_asc']);
+		$sorts['addedAt_desc'] = array_reverse($sorts['addedAt_asc']);
 		$sorts['rating_desc'] = array_reverse($sorts['rating_asc']);
 
 		$section_genres = array();
@@ -170,6 +173,7 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 		'status' => 'success',
 		'version' => $plex_export_version,
 		'last_generated' => time()*1000,
+		'last_updated' => 'last updated : '.date('Y-m-d - H:i',time()),
 		'total_items' => $total_items,
 		'num_sections' => $num_sections,
 		'section_display_order' => $section_display_order,
@@ -239,13 +243,14 @@ function load_data_for_movie($el) {
 		'user_rating' => ($_el->userRating)?floatval($_el->userRating):false,
 		'release_year' => ($_el->year)?intval($_el->year):false,
 		'release_date' => ($_el->originallyAvailableAt)?strval($_el->originallyAvailableAt):false,
+		'addedAt' => false,
 		'content_rating' => ($_el->contentRating)?strval($_el->contentRating):false,
 		'summary' => ($_el->summary)?strval($_el->summary):false,
 		'studio' => ($_el->studio)?strval($_el->studio):false,
 		'genre' => false,
 		'director' => false,
 		'role' => false,
-		'media' => false,
+		'media' => false
 	);
 
 	$media_el = $el->Media->attributes();
@@ -287,6 +292,8 @@ function load_data_for_movie($el) {
 	$roles = array();
 	foreach($xml->Video->Role as $role) $roles[] = strval($role->attributes()->tag);
 	if(count($roles)>0) $item['role'] = $roles;
+
+	$item['addedAt']=intval($xml->Video->attributes()->addedAt);
 
 	return $item;
 

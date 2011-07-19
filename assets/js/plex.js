@@ -16,6 +16,7 @@ var PLEX = {
 	filter_timeout: false,
 	filter_delay: 350,
 	popup_visible: false,
+	last_updated: "none",
 
 
 	load_data: function(aData) {
@@ -25,6 +26,7 @@ var PLEX = {
 		});
 		PLEX.total_items = aData.total_items;
 		PLEX.section_display_order = aData.section_display_order;
+		PLEX.last_updated = aData.last_updated;
 		PLEX.data_loaded = true;
 	}, // end func: load_data
 
@@ -326,6 +328,7 @@ var PLEX = {
 		switch(arg_new_sort_key) {
 			case "release": new_sort_key = "release"; break;
 			case "rating": new_sort_key = "rating"; break;
+			case "addedAt": new_sort_key = "addedAt"; break;
 		}
 
 		if(new_sort_key == PLEX.current_sort_key) {
@@ -526,6 +529,7 @@ var PLEX = {
 		}
 
 		PLEX._total_items = $("#total_items");
+		PLEX._last_updated = $("#last_updated");
 		PLEX._sections_list = $("#plex_section_list");
 		PLEX._sorts_list = $("#plex_sort_list");
 		PLEX._genre_list_section = $("#plex_genre_list_section").hide();
@@ -543,6 +547,7 @@ var PLEX = {
 		PLEX._popup_container = $("#popup-container");
 
 		PLEX._total_items.text(number_format(PLEX.total_items));
+		PLEX._last_updated.text(PLEX.last_updated);
 		PLEX.display_sections_list();
 
 		$("li", PLEX._sections_list).click(function(){
