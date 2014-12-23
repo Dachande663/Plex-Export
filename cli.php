@@ -6,7 +6,11 @@
 
 	A CLI script to export information from your Plex library.
 	Usage:
-		php cli.php [-plex-url="http://your-plex-library:32400"] [-data-dir="plex-data"] [-sections=1,2,3 or "Movies,TV Shows"]
+		php cli.php [-plex-url="http://your-plex-library:32400"] [-data-dir="plex-data"] [-sections=1,2,3 or "Movies,TV Shows"] [-token=TheTokenToUse]
+		
+	Dane22, a Plex Community member added support for Plex Tokens
+	
+	Token: To get a valid token, look here: https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token
 
 */
 $timer_start = microtime(true);
@@ -24,12 +28,24 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 		'thumbnail-width' => 150,
 		'thumbnail-height' => 250,
 		'sections' => 'all',
-		'sort-skip-words' => 'a,the,der,die,das'
+		'sort-skip-words' => 'a,the,der,die,das',
+		'token' => ''
 	);
 	$options = hl_parse_arguments($_SERVER['argv'], $defaults);
 	if(substr($options['plex-url'],-1)!='/') $options['plex-url'] .= '/'; // Always have a trailing slash
 	$options['absolute-data-dir'] = dirname(__FILE__).'/'.$options['data-dir']; // Run in current dir (PHP CLI defect)
 	$options['sort-skip-words'] = (array) explode(',', $options['sort-skip-words']); # comma separated list of words to skip for sorting titles
+	
+	// Create the http header with a X-Plex-Token in it	
+	$headers = array(
+	'http'=>array(
+    'method'=>"GET",
+    'header'=>"X-Plex-Token: ".$options['token']              
+		)
+	);
+	
+	$context = stream_context_create($headers);
+	
 	check_dependancies(); // Check everything is enabled as necessary
 
 
@@ -222,6 +238,7 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 function load_data_for_movie($el) {
 
 	global $options;
+	global $context;
 
 	$_el = $el->attributes();
 	$key = intval($_el->ratingKey);
@@ -298,8 +315,6 @@ function load_data_for_movie($el) {
 	return $item;
 
 } // end func: load_data_for_movie
-
-
 
 
 
@@ -400,13 +415,6 @@ function load_data_for_show($el) {
 	return $item;
 
 } // end func: load_data_for_show
-
-
-
-
-
-
-
 
 
 /**
@@ -512,13 +520,18 @@ function load_items_for_section($section) {
 function load_xml_from_url($url) {
 
 	global $options;
+	global $context;
+	
+	
+	
 
-	if(!@fopen($url, 'r')) {
+	if(!@fopen($url, 'r', false, $context)) {
 		plex_error('The Plex library could not be found at '.$options['plex-url']);
 		return false;
 	}
 
-	$xml = @simplexml_load_file($url);
+	$xml = file_get_contents($url, false, $context);
+	$xml = @simplexml_load_string($xml);
 	if(!$xml) {
 		plex_error('Data could not be read from the Plex server at '.$url);
 		return false;
@@ -541,6 +554,7 @@ function load_xml_from_url($url) {
 function generate_item_thumbnail($thumb_url, $key, $title) {
 
 	global $options;
+	global $context;
 
 	$filename = '/thumb_'.$key.'.jpeg';
 	$save_filename = $options['absolute-data-dir'].$filename;
@@ -556,7 +570,7 @@ function generate_item_thumbnail($thumb_url, $key, $title) {
 	$source_url = $options['plex-url'].substr($thumb_url,1); # e.g. http://local:32400/library/metadata/123/thumb?=date
 	$transcode_url = $options['plex-url'].'photo/:/transcode?width='.$options['thumbnail-width'].'&height='.$options['thumbnail-height'].'&url='.urlencode($source_url);
 
-	$img_data = @file_get_contents($transcode_url);
+	$img_data = @file_get_contents($transcode_url, false, $context);
 	if(!$img_data) {
 		plex_error('Could not load thumbnail for '.$title,' skipping');
 		return false;
