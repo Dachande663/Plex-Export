@@ -38,3 +38,9 @@ Features: (or: things I'll try and add as and when I get time)
 	* Sort by name, year, rating etc
 	* Pull in favourites from Plex
 	* More detailed TV Show popup (seasons, episodes etc)
+
+Notes2:
+	* If your Plex Server is running in Home mode, we need to authenticate via a token
+	* To get a valid token for your system, look here: https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token
+	* Then when running cli.php, add a parameter like: -token=<Your Token>
+

@@ -36,14 +36,25 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 	$options['absolute-data-dir'] = dirname(__FILE__).'/'.$options['data-dir']; // Run in current dir (PHP CLI defect)
 	$options['sort-skip-words'] = (array) explode(',', $options['sort-skip-words']); # comma separated list of words to skip for sorting titles
 	
-	// Create the http header with a X-Plex-Token in it	
-	$headers = array(
-	'http'=>array(
-    'method'=>"GET",
-    'header'=>"X-Plex-Token: ".$options['token']              
-		)
-	);
+	// Create the http header with a X-Plex-Token in it	if specified
 	
+	if (strlen($options['token']) == 0){
+		$headers = array(
+			'http'=>array(
+    	'method'=>"GET"                 
+			)
+		);
+	}
+	else
+	{
+		$headers = array(
+		'http'=>array(
+		  'method'=>"GET",
+		  'header'=>"X-Plex-Token: ".$options['token']              
+			)
+		);
+	}
+
 	$context = stream_context_create($headers);
 	
 	check_dependancies(); // Check everything is enabled as necessary
