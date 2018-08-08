@@ -137,8 +137,7 @@ error_reporting(E_ALL ^ E_NOTICE | E_WARNING);
 		$raw_section_genres = array();
 
 		foreach($items as $key=>$item) {
-			
-			$title_sort = strtolower($item['title']);
+			$title_sort = strtolower($item['titleSort']);
 			$title_first_space = strpos($title_sort, ' ');
 			if($title_first_space>0) {
 				$title_first_word = substr($title_sort, 0, $title_first_space);
@@ -255,6 +254,14 @@ function load_data_for_movie($el) {
 	$key = intval($_el->ratingKey);
 	if($key<=0) return false;
 	$title = strval($_el->title);
+	if (isset($_el->titleSort))
+	{
+		$titleSort = strval($_el->titleSort);
+	} 
+	else
+	{
+		$titleSort = strval($_el->title);
+	}
 	plex_log('Scanning movie: '.$title);
 
 	$thumb = generate_item_thumbnail(strval($_el->thumb), $key, $title);
@@ -264,6 +271,7 @@ function load_data_for_movie($el) {
 		'type' => 'movie',
 		'thumb' => $thumb,
 		'title' => $title,
+		'titleSort' => $titleSort,
 		'duration' => floatval($_el->duration),
 		'view_count' => intval($_el->viewCount),
 		'tagline' => ($_el->tagline)?strval($_el->tagline):false,
@@ -340,6 +348,14 @@ function load_data_for_show($el) {
 	$key = intval($_el->ratingKey);
 	if($key<=0) return false;
 	$title = strval($_el->title);
+	if (isset($_el->titleSort))
+	{
+		$titleSort = strval($_el->titleSort);
+	} 
+	else
+	{
+		$titleSort = strval($_el->title);
+	}
 	plex_log('Scanning show: '.$title);
 
 	$thumb = generate_item_thumbnail(strval($_el->thumb), $key, $title);
@@ -349,6 +365,7 @@ function load_data_for_show($el) {
 		'type' => 'show',
 		'thumb' => $thumb,
 		'title' => $title,
+		'titleSort' => $titleSort,
 		'rating' => ($_el->rating)?floatval($_el->rating):false,
 		'user_rating' => ($_el->userRating)?floatval($_el->userRating):false,
 		'release_year' => ($_el->year)?intval($_el->year):false,
@@ -486,7 +503,6 @@ function load_items_for_section($section) {
 
 	global $options;
 	$url = $options['plex-url'].'library/sections/'.$section['key'].'/all';
-
 	$xml = load_xml_from_url($url);
 	if(!$xml) return false;
 
