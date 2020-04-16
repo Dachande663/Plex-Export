@@ -35,15 +35,15 @@ PLEX Export does not have to be run on the system containing Plex Media Server h
 
 
 ### Running 
-1. In your preferred shell/terminal enter the following command: 
+In your preferred shell/terminal enter the following command: 
 ```
 php cli.php
 ```
-1. If Plex Media Server is running on a different machine, specify it's URL with the `-plex-url` parameter e.g. 
+If Plex Media Server is running on a different machine, specify it's URL with the `-plex-url` parameter e.g. 
 ```
 php cli.php -plex-url=http://other-machine.local:32400
 ```
-1. Upon completion your plex-data directory will now contain a .js file and any related thumbnails. Access the index.html file in your web browser and enjoy :) Note that you must launch an HTML server, such as 
+Upon completion your plex-data directory will now contain a .js file and any related thumbnails. Access the index.html file in your web browser and enjoy :) Note that you must launch an HTML server, such as 
 ```
 python -m html.server
 ```
